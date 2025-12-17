@@ -40,4 +40,4 @@ jobs:
             -url="jdbc:mysql://127.0.0.1:3306/${{ secrets.DB_NAME }}" \
             -user="${{ secrets.DB_USER }}" \
             -password="${{ secrets.DB_PASSWORD }}" \
-            baseline
+            migrate
