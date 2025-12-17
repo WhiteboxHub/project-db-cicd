@@ -1,0 +1,4 @@
+CREATE TABLE ci_cd_test (
+    id INT PRIMARY KEY,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
