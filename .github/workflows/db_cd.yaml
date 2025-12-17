@@ -12,19 +12,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Authenticate to GCP
+      # Authenticate GitHub Actions to GCP
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      # Start Cloud SQL Proxy (OFFICIAL + VERSION PINNED)
-      - name: Start Cloud SQL Proxy
-        uses: google-github-actions/cloud-sql-proxy@v2.11.0
-        with:
-          instances: ${{ secrets.CLOUD_SQL_INSTANCE }}=tcp:3306
+      # Start Cloud SQL Auth Proxy (OFFICIAL WAY)
+      - name: Start Cloud SQL Auth Proxy
+        run: |
+          curl -o cloud-sql-proxy https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.11.0/cloud-sql-proxy.linux.amd64
+          chmod +x cloud-sql-proxy
+          ./cloud-sql-proxy \
+            ${{ secrets.CLOUD_SQL_INSTANCE }} \
+            --port 3306 &
+          
+          echo "Waiting for Cloud SQL Proxy..."
+          sleep 10
 
-      # Flyway BASELINE (RUN ONCE ONLY)
+      # Flyway BASELINE (RUN ONCE)
       - name: Flyway BASELINE
         run: |
           docker run --rm \
