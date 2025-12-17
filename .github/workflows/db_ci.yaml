@@ -18,7 +18,7 @@ jobs:
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping"
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -u root -proot"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
@@ -34,17 +34,15 @@ jobs:
             sleep 2
           done
 
-      - name: Install Flyway
-        run: |
-          wget -qO- https://download.redgate.com/maven/release/com/redgate/flyway/flyway-commandline/10.10.0/flyway-commandline-10.10.0-linux-x64.tar.gz | tar xvz && sudo ln -s `pwd`/flyway-10.10.0/flyway /usr/local/bin
-
       - name: Run Flyway migrate (validation)
         run: |
-          flyway \
-            -url="jdbc:mysql://127.0.0.1:3306/testdb" \
+          docker run --rm \
+            --network host \
+            -v ${{ github.workspace }}/db/migrations:/flyway/sql \
+            flyway/flyway:10 \
+            -url=jdbc:mysql://127.0.0.1:3306/testdb \
             -user=root \
             -password=root \
-            -locations="filesystem:db/migrations" \
             migrate
 
       - name: Set up Python

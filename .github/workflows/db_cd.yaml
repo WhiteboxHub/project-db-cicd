@@ -12,7 +12,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Authenticate to GCP
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v2
         with:
@@ -21,7 +20,6 @@ jobs:
       - name: Setup gcloud
         uses: google-github-actions/setup-gcloud@v2
 
-      # Start Cloud SQL Proxy
       - name: Start Cloud SQL Proxy
         run: |
           curl -o cloud-sql-proxy https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.11.0/cloud-sql-proxy.linux.amd64
@@ -29,16 +27,13 @@ jobs:
           ./cloud-sql-proxy ${{ secrets.CLOUD_SQL_INSTANCE }} --port 3306 &
           sleep 10
 
-      - name: Install Flyway
-        run: |
-          wget -qO- https://download.redgate.com/maven/release/com/redgate/flyway/flyway-commandline/10.10.0/flyway-commandline-10.10.0-linux-x64.tar.gz | tar xvz && sudo ln -s `pwd`/flyway-10.10.0/flyway /usr/local/bin
-
-      # Run Flyway migrations
       - name: Run Flyway migrate (production)
         run: |
-          flyway \
-            -url="jdbc:mysql://127.0.0.1:3306/${{ secrets.DB_NAME }}" \
-            -user="${{ secrets.DB_USER }}" \
-            -password="${{ secrets.DB_PASSWORD }}" \
-            -locations="filesystem:db/migrations" \
+          docker run --rm \
+            --network host \
+            -v ${{ github.workspace }}/db/migrations:/flyway/sql \
+            flyway/flyway:10 \
+            -url=jdbc:mysql://127.0.0.1:3306/${{ secrets.DB_NAME }} \
+            -user=${{ secrets.DB_USER }} \
+            -password=${{ secrets.DB_PASSWORD }} \
             baseline
