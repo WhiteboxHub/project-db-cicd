@@ -12,74 +12,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Write GCP service account key to file
-      - name: Write GCP credentials
-        run: |
-          echo '${{ secrets.GCP_SA_KEY }}' > /tmp/gcp-key.json
+      # Authenticate GitHub Actions to GCP
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      # Start Cloud SQL Proxy with credentials
-      - name: Start Cloud SQL Proxy (Docker)
-        run: |
-          docker run -d \
-            --name cloud-sql-proxy \
-            -p 3306:3306 \
-            -v /tmp/gcp-key.json:/config/key.json \
-            -e GOOGLE_APPLICATION_CREDENTIALS=/config/key.json \
-            gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.11.0 \
-            ${{ secrets.CLOUD_SQL_INSTANCE }} --port 3306
-
-          echo "Waiting for Cloud SQL Proxy to start..."
-          sleep 5
-          
-          # Check proxy logs
-          echo "Cloud SQL Proxy logs:"
-          docker logs cloud-sql-proxy
-          
-      - name: Debug Cloud SQL Proxy connection
-        run: |
-          echo "=== Diagnostics ==="
-          echo "1. Checking if port 3306 is accessible..."
-          timeout 3 bash -c 'cat < /dev/null > /dev/tcp/127.0.0.1/3306' && echo "✓ Port 3306 is open" || echo "✗ Port 3306 is not accessible"
-          
-          echo ""
-          echo "2. Checking mysqladmin version..."
-          mysqladmin --version
-          
-          echo ""
-          echo "3. Attempting MySQL connection (with detailed error)..."
-          mysqladmin ping -h 127.0.0.1 -P 3306 -u "${{ secrets.DB_USER }}" -p'${{ secrets.DB_PASSWORD }}' || echo "Connection failed - check credentials"
-          
-          echo ""
-          echo "4. Cloud SQL Proxy logs:"
-          docker logs cloud-sql-proxy
-          
-      - name: Verify Cloud SQL Proxy connection
-        run: |
-          echo "Testing MySQL connection through proxy..."
-          for i in {1..20}; do
-            if mysqladmin ping -h 127.0.0.1 -P 3306 -u "${{ secrets.DB_USER }}" -p'${{ secrets.DB_PASSWORD }}' 2>/dev/null; then
-              echo "✓ Cloud SQL Proxy is ready and accepting connections!"
-              exit 0
-            fi
-            echo "Attempt $i: Waiting for Cloud SQL Proxy..."
-            sleep 3
-          done
-          
-          echo ""
-          echo "ERROR: Cloud SQL authentication failed after 20 attempts"
-          echo ""
-          echo "Possible issues:"
-          echo "  1. DB_USER secret is incorrect"
-          echo "  2. DB_PASSWORD secret is incorrect"
-          echo "  3. MySQL user does not exist in Cloud SQL"
-          echo "  4. MySQL user does not have proper permissions"
-          echo ""
-          echo "Please verify your GitHub secrets:"
-          echo "  - DB_USER"
-          echo "  - DB_PASSWORD"
-          echo "  - DB_NAME"
-          echo ""
-          exit 1
+      # Start Cloud SQL Proxy (official action)
+      - name: Start Cloud SQL Proxy
+        uses: google-github-actions/cloud-sql-proxy@v2
+        with:
+          instances: ${{ secrets.CLOUD_SQL_INSTANCE }}=tcp:3306
 
       # Flyway BASELINE (run once)
       - name: Flyway BASELINE (RUN ONCE)
@@ -87,8 +30,8 @@ jobs:
           docker run --rm \
             --network host \
             -v ${{ github.workspace }}/db/migrations:/flyway/sql \
-            -e FLYWAY_PASSWORD='${{ secrets.DB_PASSWORD }}' \
             flyway/flyway:10 \
-            -url=jdbc:mysql://127.0.0.1:3306/${{ secrets.DB_NAME }} \
-            -user=${{ secrets.DB_USER }} \
+            -url="jdbc:mysql://127.0.0.1:3306/${{ secrets.DB_NAME }}" \
+            -user="${{ secrets.DB_USER }}" \
+            -password="${{ secrets.DB_PASSWORD }}" \
             baseline
