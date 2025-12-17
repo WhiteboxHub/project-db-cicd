@@ -25,9 +25,9 @@ jobs:
           curl -o cloud-sql-proxy https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.11.0/cloud-sql-proxy.linux.amd64
           chmod +x cloud-sql-proxy
           ./cloud-sql-proxy ${{ secrets.CLOUD_SQL_INSTANCE }} --port 3306 &
-          sleep 10
+          sleep 15
 
-      - name: Run Flyway migrate (production)
+      - name: Flyway BASELINE (RUN ONCE)
         run: |
           docker run --rm \
             --network host \
