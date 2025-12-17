@@ -1,0 +1,39 @@
+name: DB CD - Apply Migrations
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  migrate-prod-db:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Start Cloud SQL Proxy
+        run: |
+          curl -o cloud-sql-proxy https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.11.0/cloud-sql-proxy.linux.amd64
+          chmod +x cloud-sql-proxy
+          ./cloud-sql-proxy ${{ secrets.CLOUD_SQL_INSTANCE }} --port 3306 &
+          sleep 10
+
+      - name: Run Flyway migrate (production)
+        run: |
+          docker run --rm \
+            --network host \
+            -v ${{ github.workspace }}/db/migrations:/flyway/sql \
+            flyway/flyway:10 \
+            -url=jdbc:mysql://127.0.0.1:3306/${{ secrets.DB_NAME }} \
+            -user=${{ secrets.DB_USER }} \
+            -password=${{ secrets.DB_PASSWORD }} \
+            baseline
