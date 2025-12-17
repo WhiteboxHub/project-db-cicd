@@ -12,20 +12,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Authenticate GitHub Actions to GCP
+      # Authenticate to GCP
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      # Start Cloud SQL Proxy (official action)
+      # Start Cloud SQL Proxy (OFFICIAL + VERSION PINNED)
       - name: Start Cloud SQL Proxy
-        uses: google-github-actions/cloud-sql-proxy@v2
+        uses: google-github-actions/cloud-sql-proxy@v2.11.0
         with:
           instances: ${{ secrets.CLOUD_SQL_INSTANCE }}=tcp:3306
 
-      # Flyway BASELINE (run once)
-      - name: Flyway BASELINE (RUN ONCE)
+      # Flyway BASELINE (RUN ONCE ONLY)
+      - name: Flyway BASELINE
         run: |
           docker run --rm \
             --network host \
