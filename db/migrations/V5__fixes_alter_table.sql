@@ -13,9 +13,7 @@ SET @sql := IF(
     ADD COLUMN job_owner_1 BIGINT DEFAULT NULL,
     ADD COLUMN job_owner_2 BIGINT DEFAULT NULL,
     ADD COLUMN job_owner_3 BIGINT DEFAULT NULL,
-    ADD COLUMN category ENUM(''manual'',''automation'') NOT NULL DEFAULT ''manual'';
-
-  ALTER TABLE job_types
+    ADD COLUMN category ENUM(''manual'',''automation'') NOT NULL DEFAULT ''manual'',
     ADD CONSTRAINT fk_job_types_job_owner_1
       FOREIGN KEY (job_owner_1) REFERENCES employee(id) ON DELETE SET NULL,
     ADD CONSTRAINT fk_job_types_job_owner_2
