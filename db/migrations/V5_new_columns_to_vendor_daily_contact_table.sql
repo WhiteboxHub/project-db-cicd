@@ -1,0 +1,3 @@
+ALTER TABLE vendor_contact_extracts
+ADD COLUMN notes VARCHAR(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+ADD COLUMN job_source VARCHAR(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL;
