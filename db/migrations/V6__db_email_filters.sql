@@ -21,7 +21,7 @@
 -- ============================================================================
 
 INSERT INTO job_automation_keywords (category, source, keywords, match_type, action, priority, context) VALUES
-('allowed_staffing_domain', 'email_extractor', 'teksystems.com,randstad.com,manpowergroup.com,adecco.com,kellyservices.com,roberthalf.com,insight.com,hays.com,michaelpage.com,modis.com,aerotek.com,experis.com,kforce.com,apexsystems.com,cybercoders.com,akraya.com,intelliswift.com,net2source.com,eteaminc.com', 'contains', 'allow', 1, 'Legitimate staffing agencies - always allow')
+('allowed_staffing_domain', 'email_extractor', 'teksystems.com,randstad.com,manpowergroup.com,adecco.com,kellyservices.com,roberthalf.com,insight.com,hays.com,michaelpage.com,modis.com,aerotek.com,experis.com,kforce.com,apexsystems.com,cybercoders.com,akraya.com,intelliswift.com,net2source.com,eteaminc.com', 'contains', 'allow', 1, 'Legitimate staffing agencies - always allow');
 
 INSERT INTO job_automation_keywords (category, source, keywords, match_type, action, priority, context) VALUES
 ('blocked_personal_domain', 'email_extractor', 'gmail.com,googlemail.com,yahoo.com,yahoo.co.uk,yahoo.co.in,outlook.com,hotmail.com,live.com,msn.com,icloud.com,me.com,mac.com,aol.com,protonmail.com,proton.me,pm.me,mail.com,zoho.com,yandex.com,gmx.com,gmx.de,web.de,mail.ru,qq.com,163.com,126.com,rediffmail.com', 'contains', 'block', 100, 'Personal email domains'),
