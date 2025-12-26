@@ -1,4 +1,4 @@
--- Check for duplicates/noise ------------
+-- Check for duplicates/noise
 SELECT *
 FROM vendor
 WHERE email IN (
@@ -8,7 +8,7 @@ WHERE email IN (
     HAVING COUNT(*) > 1
 )
 
------- preview which row to kept or remove by high-value data fields-----------
+-- preview which row to kept or remove by high-value data fields
 -- For every email that appears more than once, this query checks how much actual information each row has.
 -- The row with more filled-in details (name, phone, company, LinkedIn, location, activity flags) is considered better.
 -- Rows are shown grouped by email, with the best one listed first.
@@ -42,10 +42,10 @@ WHERE email IN (
 )
 ORDER BY email, data_score DESC, created_at DESC;
 
--- For every email that appears more than once in vendor table -------------
---1. All rows with the same email are ranked -------------------
---2. The highest-quality row is kept----------------------------
---3. All other rows for that email are deleted------------------
+-- For every email that appears more than once in vendor table
+--1. All rows with the same email are ranked
+--2. The highest-quality row is kept
+--3. All other rows for that email are deleted
 
 
 DELETE v
