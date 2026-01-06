@@ -1,3 +1,4 @@
+-- Create upgraded trigger
 CREATE TRIGGER move_to_vendor_after_update
 AFTER UPDATE ON vendor_contact_extracts
 FOR EACH ROW
@@ -7,7 +8,7 @@ BEGIN
     -- Run only when record is moved to vendor
     IF NEW.moved_to_vendor = 1 AND OLD.moved_to_vendor = 0 THEN
 
-        --   Match by LinkedIn (strongest)
+        -- Match by LinkedIn (strongest)
         IF NEW.linkedin_internal_id IS NOT NULL THEN
             SELECT id INTO v_vendor_id
             FROM vendor
@@ -15,7 +16,7 @@ BEGIN
             LIMIT 1;
         END IF;
 
-        --   Match by Email
+        -- Match by Email
         IF v_vendor_id IS NULL AND NEW.email IS NOT NULL THEN
             SELECT id INTO v_vendor_id
             FROM vendor
@@ -23,7 +24,7 @@ BEGIN
             LIMIT 1;
         END IF;
 
-        --  Match by Phone
+        -- Match by Phone
         IF v_vendor_id IS NULL AND NEW.phone IS NOT NULL THEN
             SELECT id INTO v_vendor_id
             FROM vendor
@@ -31,7 +32,7 @@ BEGIN
             LIMIT 1;
         END IF;
 
-        --  If vendor exists → UPDATE (merge missing fields)
+        -- If vendor exists → UPDATE (merge missing fields)
         IF v_vendor_id IS NOT NULL THEN
             UPDATE vendor
             SET
@@ -44,7 +45,7 @@ BEGIN
                 location = COALESCE(vendor.location, NEW.location)
             WHERE id = v_vendor_id;
 
-        --  Else → INSERT new vendor
+        -- Else → INSERT new vendor
         ELSE
             INSERT INTO vendor (
                 full_name,
@@ -70,10 +71,10 @@ BEGIN
             SET v_vendor_id = LAST_INSERT_ID();
         END IF;
 
-        --  Link extract → vendor
+        -- Link extraction → vendor
         UPDATE vendor_contact_extracts
         SET vendor_id = v_vendor_id
         WHERE id = NEW.id;
 
     END IF;
-END$$
+END;
