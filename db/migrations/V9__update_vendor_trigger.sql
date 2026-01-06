@@ -1,4 +1,14 @@
--- Create upgraded trigger
+-- Check if table exists
+SET @tbl_exists = (
+    SELECT COUNT(*)
+    FROM information_schema.tables
+    WHERE table_schema = 'testdb'
+      AND table_name = 'vendor_contact_extracts'
+);
+
+-- Prepare the trigger creation SQL only if table exists
+SET @sql_text = IF(@tbl_exists > 0,
+'
 CREATE TRIGGER move_to_vendor_after_update
 AFTER UPDATE ON vendor_contact_extracts
 FOR EACH ROW
@@ -8,7 +18,7 @@ BEGIN
     -- Run only when record is moved to vendor
     IF NEW.moved_to_vendor = 1 AND OLD.moved_to_vendor = 0 THEN
 
-        -- Match by LinkedIn (strongest)
+        -- Match by LinkedIn
         IF NEW.linkedin_internal_id IS NOT NULL THEN
             SELECT id INTO v_vendor_id
             FROM vendor
@@ -32,7 +42,7 @@ BEGIN
             LIMIT 1;
         END IF;
 
-        -- If vendor exists → UPDATE (merge missing fields)
+        -- Update existing vendor
         IF v_vendor_id IS NOT NULL THEN
             UPDATE vendor
             SET
@@ -45,7 +55,7 @@ BEGIN
                 location = COALESCE(vendor.location, NEW.location)
             WHERE id = v_vendor_id;
 
-        -- Else → INSERT new vendor
+        -- Insert new vendor
         ELSE
             INSERT INTO vendor (
                 full_name,
@@ -71,10 +81,15 @@ BEGIN
             SET v_vendor_id = LAST_INSERT_ID();
         END IF;
 
-        -- Link extraction → vendor
+        -- Link extraction to vendor
         UPDATE vendor_contact_extracts
         SET vendor_id = v_vendor_id
         WHERE id = NEW.id;
 
     END IF;
 END;
+', NULL);
+-- Execute the trigger creation if table exists
+PREPARE stmt FROM @sql_text;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
