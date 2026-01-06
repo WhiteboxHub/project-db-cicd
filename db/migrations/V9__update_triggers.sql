@@ -1,4 +1,4 @@
--- Drop trigger if exists (safe for re-running)
+-- Safely drop trigger if it exists
 DROP TRIGGER IF EXISTS move_to_vendor_after_update;
 
 DELIMITER $$
@@ -12,7 +12,7 @@ BEGIN
     -- Run only when record is moved to vendor
     IF NEW.moved_to_vendor = 1 AND OLD.moved_to_vendor = 0 THEN
 
-        -- Match by LinkedIn
+        -- Match by LinkedIn internal ID
         IF NEW.linkedin_internal_id IS NOT NULL THEN
             SELECT id INTO v_vendor_id
             FROM vendor
@@ -20,7 +20,7 @@ BEGIN
             LIMIT 1;
         END IF;
 
-        -- Match by Email
+        -- Match by Email (use both email and source_email)
         IF v_vendor_id IS NULL AND NEW.email IS NOT NULL THEN
             SELECT id INTO v_vendor_id
             FROM vendor
@@ -28,11 +28,19 @@ BEGIN
             LIMIT 1;
         END IF;
 
+        -- Also check source_email
+        IF v_vendor_id IS NULL AND NEW.source_email IS NOT NULL THEN
+            SELECT id INTO v_vendor_id
+            FROM vendor
+            WHERE email = NEW.source_email
+            LIMIT 1;
+        END IF;
+
         -- Match by Phone
         IF v_vendor_id IS NULL AND NEW.phone IS NOT NULL THEN
             SELECT id INTO v_vendor_id
             FROM vendor
-            WHERE phone_number = NEW.phone
+            WHERE phone_number = NEW.phone OR secondary_phone = NEW.phone
             LIMIT 1;
         END IF;
 
@@ -59,17 +67,19 @@ BEGIN
                 linkedin_internal_id,
                 company_name,
                 location,
-                created_at
+                type,
+                status
             )
             VALUES (
                 NEW.full_name,
                 NEW.phone,
-                NEW.email,
+                COALESCE(NEW.email, NEW.source_email),
                 NEW.linkedin_id,
                 NEW.linkedin_internal_id,
                 NEW.company_name,
                 NEW.location,
-                NOW()
+                'third-party-vendor',
+                'prospect'
             );
 
             SET v_vendor_id = LAST_INSERT_ID();
