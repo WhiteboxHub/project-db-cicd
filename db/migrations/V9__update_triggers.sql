@@ -20,19 +20,11 @@ BEGIN
             LIMIT 1;
         END IF;
 
-        -- Match by Email (use both email and source_email)
+        -- Match by Email (only NEW.email, NOT source_email)
         IF v_vendor_id IS NULL AND NEW.email IS NOT NULL THEN
             SELECT id INTO v_vendor_id
             FROM vendor
             WHERE email = NEW.email
-            LIMIT 1;
-        END IF;
-
-        -- Also check source_email
-        IF v_vendor_id IS NULL AND NEW.source_email IS NOT NULL THEN
-            SELECT id INTO v_vendor_id
-            FROM vendor
-            WHERE email = NEW.source_email
             LIMIT 1;
         END IF;
 
@@ -44,7 +36,7 @@ BEGIN
             LIMIT 1;
         END IF;
 
-        -- Update existing vendor
+        -- Update existing vendor if found
         IF v_vendor_id IS NOT NULL THEN
             UPDATE vendor
             SET
@@ -57,7 +49,7 @@ BEGIN
                 location = COALESCE(vendor.location, NEW.location)
             WHERE id = v_vendor_id;
 
-        -- Insert new vendor
+        -- Insert new vendor if no match found
         ELSE
             INSERT INTO vendor (
                 full_name,
@@ -73,7 +65,7 @@ BEGIN
             VALUES (
                 NEW.full_name,
                 NEW.phone,
-                COALESCE(NEW.email, NEW.source_email),
+                NEW.email,  -- Use actual email, not source_email
                 NEW.linkedin_id,
                 NEW.linkedin_internal_id,
                 NEW.company_name,
