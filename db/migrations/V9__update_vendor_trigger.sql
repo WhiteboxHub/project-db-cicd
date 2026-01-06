@@ -1,9 +1,3 @@
--- 1️ Drop old trigger if exists
-DROP TRIGGER IF EXISTS move_to_vendor_after_update;
-
-DELIMITER $$ 
-
--- 2️ Create upgraded trigger
 CREATE TRIGGER move_to_vendor_after_update
 AFTER UPDATE ON vendor_contact_extracts
 FOR EACH ROW
@@ -83,5 +77,3 @@ BEGIN
 
     END IF;
 END$$
-
-DELIMITER ;
