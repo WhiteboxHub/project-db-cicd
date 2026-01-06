@@ -1,14 +1,16 @@
 -- Check if table exists
-SET @tbl_exists = (
-    SELECT COUNT(*)
-    FROM information_schema.tables
-    WHERE table_schema = 'testdb'
-      AND table_name = 'vendor_contact_extracts'
-);
+SET @table_exists = (SELECT COUNT(*) FROM information_schema.tables 
+                     WHERE table_schema = DATABASE() 
+                     AND table_name = 'vendor_contact_extracts');
 
-IF @tbl_exists > 0 THEN
-    DROP TRIGGER IF EXISTS move_to_vendor_after_update;
-    
+-- Only proceed if table exists
+IF @table_exists > 0 THEN
+    SET @drop_trigger = 'DROP TRIGGER IF EXISTS move_to_vendor_after_update';
+    PREPARE stmt1 FROM @drop_trigger;
+    EXECUTE stmt1;
+    DEALLOCATE PREPARE stmt1;
+
+    SET @create_trigger = '
     CREATE TRIGGER move_to_vendor_after_update
     AFTER UPDATE ON vendor_contact_extracts
     FOR EACH ROW
@@ -87,5 +89,9 @@ IF @tbl_exists > 0 THEN
             WHERE id = NEW.id;
 
         END IF;
-    END;
+    END';
+    
+    PREPARE stmt2 FROM @create_trigger;
+    EXECUTE stmt2;
+    DEALLOCATE PREPARE stmt2;
 END IF;
