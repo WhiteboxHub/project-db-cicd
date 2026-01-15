@@ -1,7 +1,7 @@
 -- Add index for fast cleanup
 
 
-CREATE INDEX IF NOT EXISTS idx_job_activity_log_activity_date
+CREATE INDEX idx_job_activity_log_activity_date
 ON job_activity_log (activity_date);
 
 -- Drop old cleanup event if any
