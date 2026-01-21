@@ -5,7 +5,6 @@ CREATE TABLE `projects` (
   `owner` varchar(150) NOT NULL,
   `start_date` date NOT NULL,
   `target_end_date` date DEFAULT NULL,
-  `end_date` date DEFAULT NULL,
   `priority` enum('Low','Medium','High','Critical') DEFAULT 'Medium',
   `status` enum('Planned','In Progress','Completed','On Hold','Cancelled') DEFAULT 'Planned',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
