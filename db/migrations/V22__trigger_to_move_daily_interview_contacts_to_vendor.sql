@@ -9,11 +9,10 @@ CREATE TABLE IF NOT EXISTS candidate_interview (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- STEP 1: Change delimiter for function/trigger definitions
-DELIMITER //
-
--- STEP 2: CREATE HELPER FUNCTION
+-- STEP 1: Drop existing function (if exists)
 DROP FUNCTION IF EXISTS get_existing_vendor_id;
+
+-- STEP 2: Create helper function
 CREATE FUNCTION get_existing_vendor_id(
     p_email VARCHAR(255),
     p_phone VARCHAR(50),
@@ -37,10 +36,13 @@ BEGIN
     LIMIT 1;
 
     RETURN v_vendor_id;
-END//
+END;
 
--- STEP 3: CREATE INSERT TRIGGER
+-- STEP 3: Drop triggers if they exist
 DROP TRIGGER IF EXISTS trg_candidate_interview_insert_sync_vendor;
+DROP TRIGGER IF EXISTS trg_candidate_interview_update_sync_vendor;
+
+-- STEP 4: Create INSERT trigger
 CREATE TRIGGER trg_candidate_interview_insert_sync_vendor
 AFTER INSERT ON candidate_interview
 FOR EACH ROW
@@ -85,10 +87,9 @@ BEGIN
             type = NEW.company_type
         WHERE id = v_existing_vendor_id;
     END IF;
-END//
+END;
 
--- STEP 4: CREATE UPDATE TRIGGER
-DROP TRIGGER IF EXISTS trg_candidate_interview_update_sync_vendor;
+-- STEP 5: Create UPDATE trigger
 CREATE TRIGGER trg_candidate_interview_update_sync_vendor
 AFTER UPDATE ON candidate_interview
 FOR EACH ROW
@@ -143,6 +144,4 @@ BEGIN
             WHERE id = v_existing_vendor_id;
         END IF;
     END IF;
-END//
-
-DELIMITER ;
+END;
