@@ -1,24 +1,24 @@
 -- STEP 0: Ensure candidate_interview table exists (CI-safe)
 
 CREATE TABLE IF NOT EXISTS candidate_interview (
-  id int NOT NULL AUTO_INCREMENT,
-  candidate_id int NOT NULL,
-  company varchar(200) NOT NULL,
-  company_type enum('client','third-party-vendor','implementation-partner','sourcer') DEFAULT 'client',
-  interviewer_emails text,
-  interviewer_contact text,
-  interviewer_linkedin varchar(500) DEFAULT NULL,
-  interview_date date NOT NULL,
-  mode_of_interview enum('Virtual','In Person','Phone','Assessment','AI Interview') DEFAULT 'Virtual',
-  type_of_interview enum('Recruiter Call','Technical','HR','Prep Call') DEFAULT 'Recruiter Call',
-  recording_link varchar(500) DEFAULT NULL,
-  transcript varchar(500) DEFAULT NULL,
-  job_posting_url varchar(500) DEFAULT NULL,
-  feedback enum('Pending','Positive','Negative') DEFAULT 'Pending',
-  notes text,
-  last_mod_datetime timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  backup_recording_url varchar(500) DEFAULT NULL,
-  PRIMARY KEY (`id`)
+    id int NOT NULL AUTO_INCREMENT,
+    candidate_id int NOT NULL,
+    company varchar(200) NOT NULL,
+    company_type enum('client','third-party-vendor','implementation-partner','sourcer') DEFAULT 'client',
+    interviewer_emails text,
+    interviewer_contact text,
+    interviewer_linkedin varchar(500) DEFAULT NULL,
+    interview_date date NOT NULL,
+    mode_of_interview enum('Virtual','In Person','Phone','Assessment','AI Interview') DEFAULT 'Virtual',
+    type_of_interview enum('Recruiter Call','Technical','HR','Prep Call') DEFAULT 'Recruiter Call',
+    recording_link varchar(500) DEFAULT NULL,
+    transcript varchar(500) DEFAULT NULL,
+    job_posting_url varchar(500) DEFAULT NULL,
+    feedback enum('Pending','Positive','Negative') DEFAULT 'Pending',
+    notes text,
+    last_mod_datetime timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    backup_recording_url varchar(500) DEFAULT NULL,
+    PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2867 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Candidate interview details';
 
 -- STEP 1: Drop existing function (if exists)
