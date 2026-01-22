@@ -1,5 +1,17 @@
 DELIMITER //
 
+-- STEP 0: Ensure candidate_interview table exists
+CREATE TABLE IF NOT EXISTS candidate_interview (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    company VARCHAR(200) NOT NULL,
+    interviewer_emails text,
+    interviewer_contact text,
+    interviewer_linkedin varchar(500) DEFAULT NULL,
+    company_type enum('client','third-party-vendor','implementation-partner','sourcer') DEFAULT 'client',
+    updated_at timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+);
+
+-- STEP 1: CREATE HELPER FUNCTION
 CREATE FUNCTION get_existing_vendor_id(
     p_email VARCHAR(255),
     p_phone VARCHAR(50),
@@ -10,7 +22,6 @@ DETERMINISTIC
 READS SQL DATA
 BEGIN
     DECLARE v_vendor_id INT DEFAULT NULL;
-    
     
     SELECT id INTO v_vendor_id 
     FROM vendor 
@@ -26,15 +37,14 @@ BEGIN
         (p_phone IS NOT NULL 
          AND p_phone != '' 
          AND phone_number = p_phone)
-    ORDER BY id ASC  -- Always get the oldest/first record
+    ORDER BY id ASC
     LIMIT 1;
     
     RETURN v_vendor_id;
 END//
 
--- ============================================================================
--- STEP 3: CREATE INSERT TRIGGER
--- ============================================================================
+-- STEP 2: CREATE INSERT TRIGGER
+DROP TRIGGER IF EXISTS trg_candidate_interview_insert_sync_vendor;
 
 CREATE TRIGGER trg_candidate_interview_insert_sync_vendor
 AFTER INSERT ON candidate_interview
@@ -42,13 +52,11 @@ FOR EACH ROW
 BEGIN
     DECLARE v_existing_vendor_id INT;
     
-    -- Error handler: Don't fail interview insert if vendor sync fails
     DECLARE CONTINUE HANDLER FOR SQLEXCEPTION
     BEGIN
-        -- Silently continue - interview data is more important
+        -- silently continue
     END;
     
-    -- Check if vendor exists using ANY of the contact information
     SET v_existing_vendor_id = get_existing_vendor_id(
         NEW.interviewer_emails,
         NEW.interviewer_contact,
@@ -56,7 +64,6 @@ BEGIN
     );
     
     IF v_existing_vendor_id IS NULL THEN
-        -- Vendor doesn't exist, INSERT new record
         INSERT INTO vendor (
             company_name,
             email,
@@ -76,7 +83,6 @@ BEGIN
             NOW()
         );
     ELSE
-        -- Vendor exists, UPDATE existing record
         UPDATE vendor
         SET 
             company_name = COALESCE(NEW.company, company_name),
@@ -88,9 +94,8 @@ BEGIN
     END IF;
 END//
 
--- ============================================================================
--- STEP 4: CREATE UPDATE TRIGGER
--- ============================================================================
+-- STEP 3: CREATE UPDATE TRIGGER
+DROP TRIGGER IF EXISTS trg_candidate_interview_update_sync_vendor;
 
 CREATE TRIGGER trg_candidate_interview_update_sync_vendor
 AFTER UPDATE ON candidate_interview
@@ -99,13 +104,11 @@ BEGIN
     DECLARE v_existing_vendor_id INT;
     DECLARE v_has_changes BOOLEAN DEFAULT FALSE;
     
-    -- Error handler: Don't fail interview update if vendor sync fails
     DECLARE CONTINUE HANDLER FOR SQLEXCEPTION
     BEGIN
-        -- Silently continue - interview data is more important
+        -- silently continue
     END;
     
-    -- Check if relevant fields have changed (NULL-safe comparison)
     IF (COALESCE(OLD.company, '') != COALESCE(NEW.company, '')) OR 
        (COALESCE(OLD.interviewer_emails, '') != COALESCE(NEW.interviewer_emails, '')) OR
        (COALESCE(OLD.interviewer_contact, '') != COALESCE(NEW.interviewer_contact, '')) OR
@@ -115,10 +118,7 @@ BEGIN
         SET v_has_changes = TRUE;
     END IF;
     
-    -- Only proceed if there are actual changes
     IF v_has_changes THEN
-        
-      
         SET v_existing_vendor_id = get_existing_vendor_id(
             COALESCE(NEW.interviewer_emails, OLD.interviewer_emails),
             COALESCE(NEW.interviewer_contact, OLD.interviewer_contact),
@@ -126,7 +126,6 @@ BEGIN
         );
         
         IF v_existing_vendor_id IS NULL THEN
-            -- Vendor doesn't exist (shouldn't happen on UPDATE, but handle it)
             INSERT INTO vendor (
                 company_name,
                 email,
@@ -146,7 +145,6 @@ BEGIN
                 NOW()
             );
         ELSE
-            -- Vendor exists, UPDATE with new information
             UPDATE vendor
             SET 
                 company_name = COALESCE(NEW.company, company_name),
