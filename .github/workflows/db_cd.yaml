@@ -27,16 +27,16 @@ jobs:
           sleep 10
 
       # TEMPORARY: fix failed V4
-      # - name: Flyway Repair
-      #   run: |
-      #     docker run --rm \
-      #       --network host \
-      #       -v ${{ github.workspace }}/db/migrations:/flyway/sql \
-      #       flyway/flyway:10 \
-      #       -url="jdbc:mysql://127.0.0.1:3306/${{ secrets.DB_NAME }}" \
-      #       -user="${{ secrets.DB_USER }}" \
-      #       -password="${{ secrets.DB_PASSWORD }}" \
-      #       repair
+      - name: Flyway Repair
+        run: |
+          docker run --rm \
+            --network host \
+            -v ${{ github.workspace }}/db/migrations:/flyway/sql \
+            flyway/flyway:10 \
+            -url="jdbc:mysql://127.0.0.1:3306/${{ secrets.DB_NAME }}" \
+            -user="${{ secrets.DB_USER }}" \
+            -password="${{ secrets.DB_PASSWORD }}" \
+            repair
 
       - name: Flyway Migrate
         run: |
