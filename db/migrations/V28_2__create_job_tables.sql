@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS `candidate_marketing` (
   CONSTRAINT `fk_candidate_marketing` FOREIGN KEY (`candidate_id`) REFERENCES `candidate` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_marketing_manager` FOREIGN KEY (`marketing_manager`) REFERENCES `employee` (`id`),
   CONSTRAINT `chk_priority` CHECK ((`priority` in (1,2,3,4,5)))
-) ENGINE=InnoDB AUTO_INCREMENT=161 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Candidate marketing phase tracking'
+) ENGINE=InnoDB AUTO_INCREMENT=161 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Candidate marketing phase tracking';
 
 CREATE TABLE job_definition (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
