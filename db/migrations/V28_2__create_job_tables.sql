@@ -1,3 +1,30 @@
+CREATE TABLE IF NOT EXISTS `candidate_marketing` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `candidate_id` int NOT NULL,
+  `start_date` date NOT NULL,
+  `status` enum('active','inactive') NOT NULL DEFAULT 'active',
+  `last_mod_datetime` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `marketing_manager` int DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `password` varchar(100) DEFAULT NULL,
+  `imap_password` varchar(50) DEFAULT NULL,
+  `google_voice_number` varchar(100) DEFAULT NULL,
+  `linkedin_username` varchar(100) DEFAULT NULL,
+  `linkedin_passwd` varchar(100) DEFAULT NULL,
+  `priority` int DEFAULT NULL,
+  `notes` text,
+  `move_to_placement` tinyint(1) DEFAULT '0',
+  `resume_url` varchar(255) DEFAULT NULL,
+  `linkedin_premium_end_date` date DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_marketing_manager` (`marketing_manager`),
+  KEY `idx_candidate_id` (`candidate_id`),
+  CONSTRAINT `candidate_marketing_ibfk_4` FOREIGN KEY (`marketing_manager`) REFERENCES `employee` (`id`),
+  CONSTRAINT `fk_candidate_marketing` FOREIGN KEY (`candidate_id`) REFERENCES `candidate` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_marketing_manager` FOREIGN KEY (`marketing_manager`) REFERENCES `employee` (`id`),
+  CONSTRAINT `chk_priority` CHECK ((`priority` in (1,2,3,4,5)))
+) ENGINE=InnoDB AUTO_INCREMENT=161 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Candidate marketing phase tracking'
+
 CREATE TABLE job_definition (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
 
