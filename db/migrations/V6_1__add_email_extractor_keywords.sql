@@ -1,19 +1,6 @@
 -- ============================================================================
 -- V6_1: Add Email Extractor Advanced Keywords
 -- ============================================================================
--- Description: Adds advanced filtering keywords for email extraction including:
---   - File extension blocking (CID reference filtering)
---   - Job title keywords (for company name extraction filtering)
---   - Company suffix mapping (standardization)
---   - Greeting patterns (name extraction filtering)
---   - Company indicators (name extraction filtering)
---   - Skip header keywords
---   - Additional domain/pattern blocks (marketing, ATS, SMS gateways, social media)
---   - Client language keywords
---   - Generic company terms
---   - Vendor indicators
--- ============================================================================
-
 INSERT INTO job_automation_keywords (id, category, source, keywords, match_type, action, priority, context, is_active, created_at, updated_at) VALUES
 (29, 'blocked_file_extension', 'email_extractor', '.png,.jpg,.jpeg,.gif,.bmp,.pdf,.doc,.docx,.xls,.xlsx,.zip,.rar,.txt,.csv', 'contains', 'block', 50, 'File extensions for CID reference filtering', 1, '2026-01-20 11:35:21', '2026-01-20 11:35:21'),
 (30, 'job_title_keywords', 'email_extractor', 'recruiter,talent acquisition,talent specialist,headhunter,staffing,sourcer,recruitment,hiring,manager,director,lead,head,chief,president,vp,vice president,senior,junior,principal,executive,hr,human resources,people operations,people ops,engineer,developer,architect,designer,analyst,consultant,specialist,coordinator,administrator,ceo,cto,cfo,coo,cmo,founder,co-founder,partner,associate,representative,advisor,agent,officer', 'contains', 'block', 200, 'Job titles to filter out from company name extraction', 1, '2026-01-20 11:35:21', '2026-01-20 11:35:21'),
