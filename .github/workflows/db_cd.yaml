@@ -26,7 +26,7 @@ jobs:
             --port 3306 &
           sleep 10
 
-      # TEMPORARY: fix failed V4
+      # TEMPORARY: fix failed migrations
       # - name: Flyway Repair
       #   run: |
       #     docker run --rm \
