@@ -68,28 +68,23 @@ CREATE TABLE `job_application_sites` (
     `domain` VARCHAR(255) UNIQUE NOT NULL,
     `category` ENUM('System integrator', 'Consulting firm', 'Staffing vendor', 'Product Company') NOT NULL,
     
-    -- URL & Navigation
     `automation_start_url` TEXT NOT NULL COMMENT 'URL with placeholders like {keyword} or {location}',
     `login_url` VARCHAR(500) DEFAULT NULL,
     
-    -- Technical/Platform Details
     `ats_type` VARCHAR(50) DEFAULT NULL COMMENT 'e.g., Workday, Greenhouse, Lever, ICIMS, Custom',
     `automation_suitability` ENUM('Fully automatable', 'Partially automatable', 'Conditional', 'Limited', 'Not recommended') NOT NULL,
     `login_needed` BOOLEAN DEFAULT FALSE,
     `captcha_needed` BOOLEAN DEFAULT FALSE,
     
-    -- Bot Detection & Performance
     `proxy_required` BOOLEAN DEFAULT FALSE,
     `user_agent_type` ENUM('Desktop', 'Mobile', 'Any') DEFAULT 'Desktop',
     `average_load_time_ms` INT DEFAULT NULL COMMENT 'To tune script wait_for_selector timeouts',
     
-    -- Operational Meta
     `priority` TINYINT DEFAULT 3 COMMENT '1=High, 5=Low. Determines crawl frequency',
     `last_run_status` ENUM('Success', 'Failed', 'Blocked') DEFAULT NULL,
     `last_run_at` DATETIME DEFAULT NULL,
     `is_active` BOOLEAN DEFAULT TRUE,
     
-    -- Content/Selectors (Optional: could be moved to a JSON column or separate table)
     `selector_config` JSON DEFAULT NULL COMMENT 'Store CSS/Xpath for email_field, submit_btn, etc.',
     `notes` TEXT,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
