@@ -1,0 +1,5 @@
+ALTER TABLE candidate_marketing
+ADD COLUMN mass_email TINYINT(1) NOT NULL DEFAULT 0;
+
+ALTER TABLE candidate_marketing
+ADD COLUMN candidate_intro LONGTEXT;
