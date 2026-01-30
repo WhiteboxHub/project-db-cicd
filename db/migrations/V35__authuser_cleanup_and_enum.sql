@@ -38,6 +38,33 @@ CREATE TABLE IF NOT EXISTS `authuser` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 
+-- Clean Invalid Timestamps
+
+
+UPDATE authuser
+SET lastlogin = NULL
+WHERE lastlogin < '1000-01-01 00:00:00';
+
+UPDATE authuser
+SET level3date = NULL
+WHERE level3date < '1000-01-01 00:00:00';
+
+UPDATE authuser
+SET registereddate = NULL
+WHERE registereddate < '1000-01-01 00:00:00';
+
+UPDATE authuser
+SET token_expiry = NULL
+WHERE token_expiry < '1000-01-01 00:00:00';
+
+UPDATE authuser
+SET refresh_token_expiry = NULL
+WHERE refresh_token_expiry < '1000-01-01 00:00:00';
+
+UPDATE authuser
+SET lastmoddatetime = CURRENT_TIMESTAMP
+WHERE CAST(lastmoddatetime AS CHAR) LIKE '0000-00-00%';
+
 -- Create FULL Backup (Schema + Data)
 
 DROP TABLE IF EXISTS authuser_backup;
@@ -87,31 +114,6 @@ WHERE visa_status IN ('WAITING FOR STATUS','OTHER','VISA');
 UPDATE authuser
 SET visa_status = NULL
 WHERE TRIM(COALESCE(visa_status,'')) = '';
-
-
-
--- Clean Invalid Timestamps
-
-
-UPDATE authuser
-SET lastlogin = NULL
-WHERE lastlogin < '1000-01-01 00:00:00';
-
-UPDATE authuser
-SET level3date = NULL
-WHERE level3date < '1000-01-01 00:00:00';
-
-UPDATE authuser
-SET registereddate = NULL
-WHERE registereddate < '1000-01-01 00:00:00';
-
-UPDATE authuser
-SET token_expiry = NULL
-WHERE token_expiry < '1000-01-01 00:00:00';
-
-UPDATE authuser
-SET refresh_token_expiry = NULL
-WHERE refresh_token_expiry < '1000-01-01 00:00:00';
 
 
 
