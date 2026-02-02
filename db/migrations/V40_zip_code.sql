@@ -1,0 +1,2 @@
+ALTER TABLE candidate
+ADD COLUMN zip_code VARCHAR(10) DEFAULT NULL;
