@@ -1,0 +1,30 @@
+ALTER TABLE position
+ADD COLUMN source_job_id VARCHAR(255);
+
+ALTER TABLE vendor
+ADD COLUMN lastmodedatetime DATETIME
+DEFAULT CURRENT_TIMESTAMP
+ON UPDATE CURRENT_TIMESTAMP;
+
+ALTER TABLE vendor_contact_extracts
+ADD COLUMN lastmoddatetime DATETIME
+DEFAULT CURRENT_TIMESTAMP
+ON UPDATE CURRENT_TIMESTAMP;
+
+ALTER TABLE vendor_contact_extracts
+MODIFY COLUMN notes VARCHAR(525);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
