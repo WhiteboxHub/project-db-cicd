@@ -1,4 +1,4 @@
-ALTER TABLE position
+ALTER TABLE `position`
 ADD COLUMN source_job_id VARCHAR(255);
 
 ALTER TABLE vendor
