@@ -1,0 +1,27 @@
+ALTER TABLE `position`
+ADD COLUMN source_job_id VARCHAR(255);
+
+ALTER TABLE vendor
+ADD COLUMN last_modified_datetime DATETIME
+DEFAULT CURRENT_TIMESTAMP
+ON UPDATE CURRENT_TIMESTAMP;
+
+ALTER TABLE vendor_contact_extracts
+ADD COLUMN last_modified_datetime DATETIME
+DEFAULT CURRENT_TIMESTAMP
+ON UPDATE CURRENT_TIMESTAMP;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
