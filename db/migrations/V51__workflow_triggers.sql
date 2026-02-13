@@ -1,8 +1,8 @@
-
+ALTER TABLE candidate_marketing
+ADD COLUMN run_daily_workflow TINYINT NOT NULL DEFAULT 0;
 
 ALTER TABLE candidate_marketing
-ADD COLUMN IF NOT EXISTS run_daily_workflow TINYINT NOT NULL DEFAULT 0,
-ADD COLUMN IF NOT EXISTS run_weekly_workflow TINYINT NOT NULL DEFAULT 0;
+ADD COLUMN run_weekly_workflow TINYINT NOT NULL DEFAULT 0;
 
 
 
