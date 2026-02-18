@@ -1,14 +1,4 @@
 /* =========================================================
-   Enable MySQL Event Scheduler
-   NOTE:
-   - Requires SUPER or SYSTEM_VARIABLES_ADMIN privilege
-   - Safe to run multiple times
-========================================================= */
-
-SET GLOBAL event_scheduler = ON;
-
-
-/* =========================================================
    Create event log table (optional but recommended)
 ========================================================= */
 
