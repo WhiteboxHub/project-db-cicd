@@ -1,28 +1,26 @@
 /* =========================================================
-   Create event log table (optional but recommended)
+   1️⃣ Create event log table (safe & idempotent)
 ========================================================= */
 
 CREATE TABLE IF NOT EXISTS event_logs (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    event_name VARCHAR(100),
-    deleted_rows INT,
+    event_name VARCHAR(100) NOT NULL,
+    deleted_rows INT DEFAULT 0,
     executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 
 /* =========================================================
-   Drop existing event (Flyway idempotency)
+   2️⃣ Drop existing event (Flyway re-run safe)
 ========================================================= */
 
 DROP EVENT IF EXISTS ev_delete_moved_contacts;
 
 
 /* =========================================================
-   Create Cleanup Event
-   Deletes contacts already moved to vendor table
+   3️⃣ Create cleanup event
+   Deletes records moved to vendor table older than 14 days
 ========================================================= */
-
-DELIMITER $$
 
 CREATE EVENT ev_delete_moved_contacts
 ON SCHEDULE EVERY 1 DAY
@@ -46,6 +44,4 @@ BEGIN
     INSERT INTO event_logs(event_name, deleted_rows)
     VALUES ('ev_delete_moved_contacts', v_deleted);
 
-END$$
-
-DELIMITER ;
+END;
