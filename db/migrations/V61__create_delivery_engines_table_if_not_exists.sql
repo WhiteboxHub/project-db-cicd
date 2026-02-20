@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS `delivery_engines` (
 
 -- whitebox_learning.automation_workflows definition
 
-CREATE TABLE `automation_workflows` (
+CREATE TABLE IF NOT EXISTS `automation_workflows` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `workflow_key` varchar(128) NOT NULL,
   `name` varchar(255) NOT NULL,
