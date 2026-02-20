@@ -1,0 +1,23 @@
+CREATE TABLE IF NOT EXISTS `delivery_engines` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `engine_type` enum('smtp','mailgun','sendgrid','aws_ses','outlook_api') NOT NULL,
+  `host` varchar(255) DEFAULT NULL,
+  `port` int DEFAULT NULL,
+  `api_key` varchar(255) DEFAULT NULL,
+  `username` varchar(255) DEFAULT NULL,
+  `password` varchar(255) DEFAULT NULL,
+  `from_email` varchar(255) NOT NULL,
+  `from_name` varchar(255) DEFAULT NULL,
+  `max_recipients_per_run` int unsigned DEFAULT NULL,
+  `batch_size` int unsigned DEFAULT '50',
+  `rate_limit_per_minute` int unsigned DEFAULT '60',
+  `dedupe_window_minutes` int unsigned DEFAULT NULL,
+  `retry_policy` json DEFAULT NULL,
+  `max_retries` tinyint unsigned NOT NULL DEFAULT '3',
+  `timeout_seconds` int unsigned NOT NULL DEFAULT '600',
+  `status` enum('active','inactive','deprecated') DEFAULT 'active',
+  `created_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  `updated_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
