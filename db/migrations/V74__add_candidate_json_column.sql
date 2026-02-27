@@ -1,0 +1,2 @@
+ALTER TABLE candidate_marketing
+ADD COLUMN candidate_json JSON AFTER run_email_extraction;
