@@ -1,0 +1,23 @@
+CREATE TABLE IF NOT EXISTS `email_positions` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `candidate_id` int DEFAULT NULL COMMENT 'ID from candidate_marketing table - tracks which candidate inbox this came from',
+  `source` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'linkedin, email, job_board, scraper',
+  `source_uid` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'external job id or message id',
+  `extracted_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `extractor_version` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `title` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `company` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `location` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `zip` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `description` mediumtext COLLATE utf8mb4_unicode_ci,
+  `contact_info` text COLLATE utf8mb4_unicode_ci COMMENT 'emails, phones, linkedin, free text',
+  `notes` text COLLATE utf8mb4_unicode_ci COMMENT 'any additional extractor notes',
+  `payload` json DEFAULT NULL COMMENT 'full extractor payload if available',
+  `error_message` text COLLATE utf8mb4_unicode_ci,
+  `processed_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_source_uid` (`source`,`source_uid`),
+  KEY `idx_extracted_at` (`extracted_at`),
+  KEY `idx_candidate_id` (`candidate_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Extracted job positions from email';
