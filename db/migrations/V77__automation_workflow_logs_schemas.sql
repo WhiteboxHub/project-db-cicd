@@ -18,7 +18,5 @@ CREATE TABLE IF NOT EXISTS`automation_workflow_logs` (
   KEY `fk_log_schedule` (`schedule_id`),
   KEY `idx_log_workflow_status` (`workflow_id`,`status`),
   KEY `idx_log_run_id` (`run_id`),
-  KEY `idx_log_created` (`created_at`),
-  CONSTRAINT `fk_log_schedule` FOREIGN KEY (`schedule_id`) REFERENCES `automation_workflows_schedule` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `fk_log_workflow` FOREIGN KEY (`workflow_id`) REFERENCES `automation_workflows` (`id`) ON DELETE CASCADE
+  KEY `idx_log_created` (`created_at`)
 ) ENGINE=InnoDB AUTO_INCREMENT=145 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
