@@ -9,7 +9,6 @@ CREATE TABLE IF NOT EXISTS `job_link_clicks` (
 
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_candidate_job` (`authuser_id`, `job_listing_id`),
-  CONSTRAINT `fk_click_authuser`    FOREIGN KEY (`authuser_id`)   REFERENCES `authuser`     (`id`),
-  CONSTRAINT `fk_click_job_listing` FOREIGN KEY (`job_listing_id`) REFERENCES `job_listing` (`id`) ON DELETE SET NULL
+  CONSTRAINT `fk_click_authuser` FOREIGN KEY (`authuser_id`) REFERENCES `authuser` (`id`)
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
