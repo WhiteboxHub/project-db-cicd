@@ -11,6 +11,6 @@ CREATE TABLE IF NOT EXISTS candidate_training_agreement (
     updated_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_candidate_agreement
         FOREIGN KEY (candidate_id)
-        REFERENCES candidates(id)
+        REFERENCES candidate(id)
         ON DELETE CASCADE
 );
