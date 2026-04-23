@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS `jobcli_field_answers` (
     `confidence` DECIMAL(5,4) NOT NULL DEFAULT 0.0000,
     `version`  VARCHAR(50) DEFAULT 'v1.0.0',
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY `uk_ats_label` (`ats_type`, `normalized_label`, `value`)
+    UNIQUE KEY `uk_ats_label` (`ats_type`, `normalized_label`, `value`(191))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `jobcli_locators` (
