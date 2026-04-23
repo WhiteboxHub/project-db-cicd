@@ -2,13 +2,13 @@ CREATE TABLE IF NOT EXISTS `jobcli_field_answers` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `ats_type` VARCHAR(100) NOT NULL,
     `normalized_label` VARCHAR(255) NOT NULL,
-    `value` TEXT NOT NULL,
+    `value` VARCHAR(500) NOT NULL,
     `total_success` INT NOT NULL DEFAULT 0,
     `total_failure` INT NOT NULL DEFAULT 0,
     `confidence` DECIMAL(5,4) NOT NULL DEFAULT 0.0000,
     `version`  VARCHAR(50) DEFAULT 'v1.0.0',
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY `uk_ats_label` (`ats_type`, `normalized_label` , `value`)
+    UNIQUE KEY `uk_ats_label` (`ats_type`, `normalized_label`, `value`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `jobcli_locators` (
