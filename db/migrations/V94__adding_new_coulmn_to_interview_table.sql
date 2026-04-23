@@ -1,0 +1,2 @@
+ALTER TABLE candidate_interview
+ADD COLUMN q_a MEDIUMTEXT DEFAULT NULL AFTER audio_link;
