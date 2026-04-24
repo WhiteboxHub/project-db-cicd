@@ -1,0 +1,10 @@
+ALTER TABLE `email_smtp_credentials`
+ADD COLUMN `current_day_sent` INT NOT NULL DEFAULT 0,
+ADD COLUMN `last_reset_date` DATE NOT NULL DEFAULT (CURRENT_DATE),
+ADD COLUMN `is_warming_up` TINYINT(1) NOT NULL DEFAULT 0,
+ADD COLUMN `warmup_started_at` DATETIME DEFAULT NULL,
+ADD COLUMN `warmup_daily_limit` INT DEFAULT 5,
+ADD COLUMN `last_used_at` DATETIME DEFAULT NULL,
+ADD COLUMN `is_healthy` TINYINT(1) NOT NULL DEFAULT 1;
+
+
