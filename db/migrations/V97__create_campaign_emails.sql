@@ -1,6 +1,6 @@
 CREATE TABLE campaign_emails (
     id BIGINT NOT NULL AUTO_INCREMENT,
-    workflow_id BIGINT NOT NULL,
+    workflow_id BIGINT UNSIGNED NOT NULL,
     candidate_id INT NOT NULL,
     vendor_email VARCHAR(150) NOT NULL,
     -- State Tracking
@@ -13,7 +13,7 @@ CREATE TABLE campaign_emails (
     ) NOT NULL DEFAULT 'pending',
     retry_count INT NOT NULL DEFAULT 0,
     last_attempt_at DATETIME DEFAULT NULL,
-    run_log_id BIGINT DEFAULT NULL,
+    run_log_id BIGINT UNSIGNED DEFAULT NULL,
     credential_id INT DEFAULT NULL,
     message_id VARCHAR(255) DEFAULT NULL,
     error_message TEXT,
