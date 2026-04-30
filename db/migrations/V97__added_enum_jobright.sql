@@ -11,5 +11,5 @@ MODIFY COLUMN `source` ENUM(
   'email_bot_llm_local',
   'trueup.io',
   'wellfound',
-  'jobright'
+  'jobright.ai'
 ) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'linkedin';
