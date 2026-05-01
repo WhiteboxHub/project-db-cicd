@@ -1,0 +1,3 @@
+ALTER TABLE candidate_interview
+ADD COLUMN email_text MEDIUMTEXT DEFAULT NULL,
+ADD COLUMN feedback_text MEDIUMTEXT DEFAULT NULL; 
