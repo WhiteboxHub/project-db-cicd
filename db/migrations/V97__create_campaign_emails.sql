@@ -1,34 +1,29 @@
-CREATE TABLE campaign_emails (
-    id BIGINT NOT NULL AUTO_INCREMENT,
-    workflow_id BIGINT UNSIGNED NOT NULL,
-    candidate_id INT NOT NULL,
-    vendor_email VARCHAR(150) NOT NULL,
-    -- State Tracking
-    status ENUM (
-        'pending',
-        'processing',
-        'sent',
-        'failed',
-        'bounced'
-    ) NOT NULL DEFAULT 'pending',
-    retry_count INT NOT NULL DEFAULT 0,
-    last_attempt_at DATETIME DEFAULT NULL,
-    run_log_id BIGINT UNSIGNED DEFAULT NULL,
-    credential_id INT DEFAULT NULL,
-    message_id VARCHAR(255) DEFAULT NULL,
-    error_message TEXT,
-    -- Timestamps
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (id),
-    -- Normalize email (avoid case issues)
-    UNIQUE KEY uq_campaign_email_dedup (workflow_id, candidate_id, vendor_email),
-    -- Indexes for performance
-    KEY idx_status (status),
-    KEY idx_lookup (workflow_id, candidate_id),
-    KEY idx_retry (status, retry_count),
-    -- Foreign Keys
-    CONSTRAINT fk_campaign_email_workflow FOREIGN KEY (workflow_id) REFERENCES automation_workflows (id) ON DELETE CASCADE,
-    CONSTRAINT fk_campaign_email_log FOREIGN KEY (run_log_id) REFERENCES automation_workflow_logs (id) ON DELETE SET NULL,
-    CONSTRAINT fk_campaign_email_credential FOREIGN KEY (credential_id) REFERENCES email_smtp_credentials (id) ON DELETE SET NULL
-);
+CREATE TABLE `campaign_emails` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `workflow_id` bigint unsigned NOT NULL,
+  `candidate_id` int NOT NULL,
+  `vendor_email` varchar(150) NOT NULL,
+  `scheduler_id` bigint unsigned DEFAULT NULL,
+  `run_log_id` bigint unsigned DEFAULT NULL,
+  `credential_id` int DEFAULT NULL,
+  `status` enum('pending','processing','sent','failed','bounced') NOT NULL DEFAULT 'pending',
+  `bounce_type` enum('none','soft','hard','invalid') NOT NULL DEFAULT 'none',
+  `retry_count` int NOT NULL DEFAULT '0',
+  `last_attempt_at` datetime DEFAULT NULL,
+  `message_id` varchar(255) DEFAULT NULL,
+  `error_message` text,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_scheduler_candidate_email` (`scheduler_id`,`candidate_id`,`vendor_email`),
+  KEY `idx_status` (`status`),
+  KEY `idx_lookup` (`workflow_id`,`candidate_id`),
+  KEY `idx_retry` (`status`,`retry_count`),
+  KEY `idx_scheduler` (`scheduler_id`),
+  KEY `fk_campaign_email_log` (`run_log_id`),
+  KEY `fk_campaign_email_credential` (`credential_id`),
+  CONSTRAINT `fk_campaign_email_credential` FOREIGN KEY (`credential_id`) REFERENCES `email_smtp_credentials` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_campaign_email_log` FOREIGN KEY (`run_log_id`) REFERENCES `automation_workflow_logs` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_campaign_email_scheduler` FOREIGN KEY (`scheduler_id`) REFERENCES `automation_workflows_schedule` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_campaign_email_workflow` FOREIGN KEY (`workflow_id`) REFERENCES `automation_workflows` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
