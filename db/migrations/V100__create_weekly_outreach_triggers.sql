@@ -35,7 +35,7 @@ DELIMITER $$
 -- ============================================================================
 -- TRIGGER 1: Create weekday schedule when flag is enabled
 -- ============================================================================
-DROP TRIGGER IF EXISTS trg_candidate_marketing_outreach$$
+DROP TRIGGER IF EXISTS trg_candidate_marketing_outreach
 
 CREATE TRIGGER trg_candidate_marketing_outreach
 BEFORE UPDATE ON candidate_marketing
@@ -44,7 +44,7 @@ BEGIN
 
     DECLARE v_candidate_name   VARCHAR(100) DEFAULT NULL;
     DECLARE v_linkedin_url     VARCHAR(200) DEFAULT NULL;
-    DECLARE v_candidate_email  VARCHAR(100) DEFAULT NULL;
+
     DECLARE v_found            TINYINT(1)   DEFAULT 0;
     DECLARE v_next_run         DATETIME     DEFAULT NULL;
 
@@ -52,39 +52,32 @@ BEGIN
     IF OLD.run_outreach_emails = 0
        AND NEW.run_outreach_emails = 1 THEN
 
-        -- ── Dedup check ───────────────────────────────────────────────────
-        --    Query automation_workflows_schedule directly — no lock table.
-        --    If an active 'custom' schedule already exists for this candidate
-        --    → skip silently. Self-healing: if the schedule was deleted or
-        --    disabled externally, EXISTS returns FALSE and a new one is created.
-        --    CAST to CHAR ensures type-safe match against JSON string value.
+        -- Dedup check
         IF NOT EXISTS (
             SELECT 1
-            FROM   automation_workflows_schedule
-            WHERE  automation_workflow_id = 3
-              AND  frequency              = 'custom'
-              AND  enabled                = 1
-              AND  JSON_UNQUOTE(
-                       JSON_EXTRACT(run_parameters, '$.candidate_id')
-                   ) = CAST(NEW.candidate_id AS CHAR)
+            FROM automation_workflows_schedule
+            WHERE automation_workflow_id = 3
+              AND frequency = 'custom'
+              AND enabled = 1
+              AND JSON_UNQUOTE(
+                    JSON_EXTRACT(run_parameters, '$.candidate_id')
+                  ) = CAST(NEW.candidate_id AS CHAR)
         ) THEN
 
-            -- ── Fetch candidate details ───────────────────────────────────
+            -- Fetch candidate details
             SELECT
                 c.full_name,
                 c.linkedin_id,
-                c.email,
                 1
             INTO
                 v_candidate_name,
                 v_linkedin_url,
-                v_candidate_email,
                 v_found
             FROM candidate c
             WHERE c.id = NEW.candidate_id
             LIMIT 1;
 
-            -- ── Validate ──────────────────────────────────────────────────
+            -- Validation
             IF v_found = 0 THEN
                 SIGNAL SQLSTATE '45000'
                 SET MESSAGE_TEXT = 'Outreach trigger: candidate not found.';
@@ -96,55 +89,24 @@ BEGIN
                 SET MESSAGE_TEXT = 'Outreach trigger: candidate.full_name is empty.';
             END IF;
 
-            IF v_candidate_email IS NULL
-               OR TRIM(v_candidate_email) = '' THEN
+            IF NEW.email IS NULL
+               OR TRIM(NEW.email) = '' THEN
                 SIGNAL SQLSTATE '45000'
-                SET MESSAGE_TEXT = 'Outreach trigger: candidate.email is empty.';
+                SET MESSAGE_TEXT = 'Outreach trigger: candidate_marketing.email is empty.';
             END IF;
 
-            -- ── Calculate next run time ───────────────────────────────────
-            --
-            --    DAYOFWEEK: 1=Sun, 2=Mon, 3=Tue, 4=Wed, 5=Thu, 6=Fri, 7=Sat
-            --
-            --    Saturday        → next Monday   9 AM + random 0–29 min
-            --    Sunday          → next Monday   9 AM + random 0–29 min
-            --    Weekday < 9 AM  → today         9 AM + random 0–29 min
-            --    Friday >= 9 AM  → next Monday   9 AM + random 0–29 min
-            --    Mon–Thu >= 9 AM → tomorrow      9 AM + random 0–29 min
-            --
-            --    Random offset prevents exact-hour send fingerprinting.
+            -- Calculate next run time
+            -- Runs EVERY DAY including weekends
             SET v_next_run = CASE
 
-                -- Saturday → +2 days = Monday
-                WHEN DAYOFWEEK(NOW()) = 7 THEN
-                    DATE_ADD(
-                        DATE_ADD(CURDATE(), INTERVAL 2 DAY),
-                        INTERVAL (9 * 60 + FLOOR(RAND() * 30)) MINUTE
-                    )
-
-                -- Sunday → +1 day = Monday
-                WHEN DAYOFWEEK(NOW()) = 1 THEN
-                    DATE_ADD(
-                        DATE_ADD(CURDATE(), INTERVAL 1 DAY),
-                        INTERVAL (9 * 60 + FLOOR(RAND() * 30)) MINUTE
-                    )
-
-                -- Weekday before 9 AM → today
+                -- Before 9 AM → today
                 WHEN TIME(NOW()) < '09:00:00' THEN
                     DATE_ADD(
                         CURDATE(),
                         INTERVAL (9 * 60 + FLOOR(RAND() * 30)) MINUTE
                     )
 
-                -- Friday after 9 AM → +3 days = Monday
-                WHEN DAYOFWEEK(NOW()) = 6
-                     AND TIME(NOW()) >= '09:00:00' THEN
-                    DATE_ADD(
-                        DATE_ADD(CURDATE(), INTERVAL 3 DAY),
-                        INTERVAL (9 * 60 + FLOOR(RAND() * 30)) MINUTE
-                    )
-
-                -- Mon–Thu after 9 AM → tomorrow
+                -- After 9 AM → tomorrow
                 ELSE
                     DATE_ADD(
                         DATE_ADD(CURDATE(), INTERVAL 1 DAY),
@@ -153,12 +115,7 @@ BEGIN
 
             END;
 
-            -- ── Create schedule ───────────────────────────────────────────
-            --    workflow_id=3 (weekly_vendor_outreach — confirmed active)
-            --    cron '0 9 * * 1-5' = Mon–Fri 9 AM Pacific
-            --    next_run_at = first weekday at 9 AM ± random offset
-            --    Python scheduler advances next_run_at after each daily run.
-            --    Python scheduler sets enabled=0 when 0 pending emails remain.
+            -- Create schedule
             INSERT INTO automation_workflows_schedule (
                 automation_workflow_id,
                 timezone,
@@ -175,12 +132,12 @@ BEGIN
             VALUES (
                 3,
                 'America/Los_Angeles',
-                '0 9 * * 1-5',
+                '0 9 * * *',
                 'custom',
                 1,
                 v_next_run,
-                1,                  -- enabled
-                0,                  -- not running yet
+                1,
+                0,
                 JSON_OBJECT(
                     'candidate_id',    NEW.candidate_id,
                     'candidate_name',  TRIM(v_candidate_name),
@@ -191,14 +148,11 @@ BEGIN
                 NOW()
             );
 
-            -- Flag stays = 1 while campaign is active.
-            -- Trigger 2 resets it to 0 on completion.
-
         END IF;
 
     END IF;
 
-END$$
+END
 
 
 -- ============================================================================
