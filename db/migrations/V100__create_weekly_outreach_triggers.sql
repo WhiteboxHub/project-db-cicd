@@ -1,25 +1,26 @@
 -- ============================================================================
 -- weekly_outreach_trigger.sql
 -- ============================================================================
--- Based on deployed trigger versions confirmed working in production.
+-- Updated: One-shot flag approach + linkedin_url crash fix.
 --
 -- TRIGGER 1: trg_candidate_marketing_outreach
 --   ON:   candidate_marketing  BEFORE UPDATE
 --   WHEN: run_outreach_emails changes 0 → 1
 --   DOES:
---     - Dedup: checks automation_workflows_schedule directly (no lock table)
+--     - Dedup: checks automation_workflows_schedule for existing active schedule
 --     - Validates candidate has full_name + email
---     - Calculates next weekday run time at 9 AM ± 0–29 min random offset
---     - Inserts 'custom' Mon–Fri schedule for workflow_id=3
---     - Flag stays = 1 while campaign is active
+--     - Resolves linkedin_url with safe fallback (prevents Python ValueError crash)
+--     - Calculates next run time at 9 AM ± 0–29 min random offset
+--     - Inserts 'custom' schedule for workflow_id=3
+--     - ONE-SHOT: Immediately resets run_outreach_emails = 0
+--       (schedule_id keeps campaign alive, flag is just a trigger switch)
 --
 -- TRIGGER 2: trg_schedule_outreach_completion
 --   ON:   automation_workflows_schedule  AFTER UPDATE
 --   WHEN: enabled changes 1 → 0  AND  frequency = 'custom'
 --   DOES:
 --     - Extracts candidate_id from run_parameters JSON
---     - Resets candidate_marketing.run_outreach_emails = 0
---     - Safety net: Python scheduler already calls execute-reset-sql for this
+--     - Resets candidate_marketing.run_outreach_emails = 0 (safety net, usually already 0)
 --
 -- CONFIRMED SCHEMA:
 --   - automation_workflows: id=3, workflow_key='weekly_vendor_outreach', status='active'
@@ -33,9 +34,9 @@
 DELIMITER $$
 
 -- ============================================================================
--- TRIGGER 1: Create weekday schedule when flag is enabled
+-- TRIGGER 1: Create schedule when flag is enabled, then immediately reset flag
 -- ============================================================================
-DROP TRIGGER IF EXISTS trg_candidate_marketing_outreach
+DROP TRIGGER IF EXISTS trg_candidate_marketing_outreach$$
 
 CREATE TRIGGER trg_candidate_marketing_outreach
 BEFORE UPDATE ON candidate_marketing
@@ -44,7 +45,6 @@ BEGIN
 
     DECLARE v_candidate_name   VARCHAR(100) DEFAULT NULL;
     DECLARE v_linkedin_url     VARCHAR(200) DEFAULT NULL;
-
     DECLARE v_found            TINYINT(1)   DEFAULT 0;
     DECLARE v_next_run         DATETIME     DEFAULT NULL;
 
@@ -52,7 +52,7 @@ BEGIN
     IF OLD.run_outreach_emails = 0
        AND NEW.run_outreach_emails = 1 THEN
 
-        -- Dedup check
+        -- Dedup check: skip if an active schedule already exists for this candidate
         IF NOT EXISTS (
             SELECT 1
             FROM automation_workflows_schedule
@@ -64,7 +64,7 @@ BEGIN
                   ) = CAST(NEW.candidate_id AS CHAR)
         ) THEN
 
-            -- Fetch candidate details
+            -- Fetch candidate details from parent table
             SELECT
                 c.full_name,
                 c.linkedin_id,
@@ -77,7 +77,8 @@ BEGIN
             WHERE c.id = NEW.candidate_id
             LIMIT 1;
 
-            -- Validation
+            -- ── Validation ──────────────────────────────────────────
+
             IF v_found = 0 THEN
                 SIGNAL SQLSTATE '45000'
                 SET MESSAGE_TEXT = 'Outreach trigger: candidate not found.';
@@ -95,18 +96,18 @@ BEGIN
                 SET MESSAGE_TEXT = 'Outreach trigger: candidate_marketing.email is empty.';
             END IF;
 
-            -- Calculate next run time
-            -- Runs EVERY DAY including weekends
+            -- ── Calculate next run time ─────────────────────────────
+            -- Schedule at 9:00–9:29 AM (server time / LA time)
             SET v_next_run = CASE
 
-                -- Before 9 AM → today
+                -- Before 9 AM today → schedule for today
                 WHEN TIME(NOW()) < '09:00:00' THEN
                     DATE_ADD(
                         CURDATE(),
                         INTERVAL (9 * 60 + FLOOR(RAND() * 30)) MINUTE
                     )
 
-                -- After 9 AM → tomorrow
+                -- After 9 AM today → schedule for tomorrow
                 ELSE
                     DATE_ADD(
                         DATE_ADD(CURDATE(), INTERVAL 1 DAY),
@@ -115,7 +116,7 @@ BEGIN
 
             END;
 
-            -- Create schedule
+            -- ── Create the schedule row ─────────────────────────────
             INSERT INTO automation_workflows_schedule (
                 automation_workflow_id,
                 timezone,
@@ -141,7 +142,7 @@ BEGIN
                 JSON_OBJECT(
                     'candidate_id',    NEW.candidate_id,
                     'candidate_name',  TRIM(v_candidate_name),
-                    'linkedin_url',    COALESCE(TRIM(v_linkedin_url), ''),
+                    'linkedin_url',    COALESCE(NULLIF(TRIM(v_linkedin_url), ''), 'https://linkedin.com'),
                     'candidate_email', COALESCE(TRIM(NEW.email), '')
                 ),
                 NOW(),
@@ -150,13 +151,21 @@ BEGIN
 
         END IF;
 
+        -- ── ONE-SHOT RESET ──────────────────────────────────────
+        -- Schedule is created (or already exists via dedup).
+        -- Reset the flag immediately — the schedule_id keeps the
+        -- campaign alive, not this flag.
+        -- Because this is a BEFORE UPDATE trigger, modifying NEW.*
+        -- changes the value that actually gets written to the row.
+        SET NEW.run_outreach_emails = 0;
+
     END IF;
 
-END
+END$$
 
 
 -- ============================================================================
--- TRIGGER 2: Reset flag when scheduler marks campaign complete
+-- TRIGGER 2: Safety net — reset flag when schedule is disabled
 -- ============================================================================
 DROP TRIGGER IF EXISTS trg_schedule_outreach_completion$$
 
@@ -181,7 +190,7 @@ BEGIN
             ) AS UNSIGNED
         );
 
-        -- Reset outreach flag (safety net)
+        -- Reset outreach flag (safety net — usually already 0 from Trigger 1)
         IF v_candidate_id IS NOT NULL
            AND v_candidate_id > 0 THEN
 
