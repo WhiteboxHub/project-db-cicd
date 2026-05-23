@@ -104,14 +104,14 @@ BEGIN
                 WHEN TIME(NOW()) < '09:00:00' THEN
                     DATE_ADD(
                         CURDATE(),
-                        INTERVAL (9 * 60 + FLOOR(RAND() * 30)) MINUTE
+                        INTERVAL CAST((9 * 60 + FLOOR(RAND() * 30)) AS SIGNED) MINUTE
                     )
 
                 -- After 9 AM today → schedule for tomorrow
                 ELSE
                     DATE_ADD(
                         DATE_ADD(CURDATE(), INTERVAL 1 DAY),
-                        INTERVAL (9 * 60 + FLOOR(RAND() * 30)) MINUTE
+                        INTERVAL CAST((9 * 60 + FLOOR(RAND() * 30)) AS SIGNED) MINUTE
                     )
 
             END;
