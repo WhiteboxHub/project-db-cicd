@@ -1,3 +1,23 @@
+CREATE TABLE IF NOT EXISTS `automation_workflows_schedule` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `automation_workflow_id` bigint unsigned NOT NULL,
+  `timezone` varchar(64) NOT NULL DEFAULT 'America/Los_Angeles',
+  `cron_expression` varchar(64) DEFAULT NULL,
+  `frequency` enum('once','daily','weekly','monthly','custom') NOT NULL,
+  `interval_value` int NOT NULL DEFAULT '1',
+  `next_run_at` datetime(6) DEFAULT NULL,
+  `last_run_at` datetime(6) DEFAULT NULL,
+  `run_parameters` json DEFAULT NULL,
+  `enabled` tinyint(1) NOT NULL DEFAULT '1',
+  `is_running` tinyint(1) NOT NULL DEFAULT '0',
+  `created_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  `updated_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`id`),
+  KEY `fk_schedule_workflow_id` (`automation_workflow_id`),
+  KEY `idx_sched_next_run` (`enabled`,`next_run_at`),
+  CONSTRAINT `fk_schedule_workflow_id` FOREIGN KEY (`automation_workflow_id`) REFERENCES `automation_workflows` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 CREATE TABLE `campaign_emails` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `workflow_id` bigint unsigned NOT NULL,
