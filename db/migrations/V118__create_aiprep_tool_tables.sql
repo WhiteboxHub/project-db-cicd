@@ -1,36 +1,4 @@
--- ============================================================
--- V118: Create AI Prep Tool–specific tables
---
--- NOTE: The following tables are ALREADY managed by earlier
--- WBL migrations and must NOT be re-created here:
---   candidate, candidate_marketing, candidate_llm_api_keys,
---   candidate_resume
---
--- This migration only creates AI Prep Tool–owned tables.
--- ============================================================
-
--- 1. AIPREP_TOOL_CANDIDATES
---    Tracks per-candidate AI Prep session state (UUID or numeric user_id,
---    encrypted API key, login tracking, extraction state).
---    Links to existing `candidate` / `candidate_marketing` via wbl_email.
-CREATE TABLE IF NOT EXISTS `aiprep_tool_candidates` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `user_id` VARCHAR(255) UNIQUE NOT NULL,
-  `wbl_email` VARCHAR(255) UNIQUE DEFAULT NULL,
-  `name` VARCHAR(255) DEFAULT NULL,
-  `email` VARCHAR(255) DEFAULT NULL,
-  `role` VARCHAR(255) DEFAULT NULL,
-  `api_key_encrypted` TEXT DEFAULT NULL,
-  `login_count` INT DEFAULT 1,
-  `last_login` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `extraction_status` VARCHAR(50) DEFAULT 'pending',
-  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  INDEX `idx_user_id` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- 2. AIPREP_TOOL_RESUMES
---    AI-extracted structured resume JSON per candidate.
---    (Separate from WBL's candidate_resume which stores raw uploaded files.)
+-- Create AI Prep Tool resumes table
 CREATE TABLE IF NOT EXISTS `aiprep_tool_resumes` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `user_id` VARCHAR(255) UNIQUE NOT NULL,
@@ -40,9 +8,7 @@ CREATE TABLE IF NOT EXISTS `aiprep_tool_resumes` (
   INDEX `idx_resume_user` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 3. AIPREP_TOOL_PROJECT_CONTEXT
---    Stores the candidate's project / domain context used for
---    interview coaching and case study generation.
+-- Create AI Prep Tool project context table
 CREATE TABLE IF NOT EXISTS `aiprep_tool_project_context` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `user_id` VARCHAR(255) UNIQUE NOT NULL,
@@ -76,9 +42,7 @@ CREATE TABLE IF NOT EXISTS `aiprep_tool_project_context` (
   INDEX `idx_project_user` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 4. AIPREP_TOOL_EVALUATIONS
---    Stores intro video + interview answer evaluation records.
---    type: 'intro' | 'interview_answer' | 'interview_complete'
+-- Create AI Prep Tool evaluations table
 CREATE TABLE IF NOT EXISTS `aiprep_tool_evaluations` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `user_id` VARCHAR(255) NOT NULL,
@@ -93,8 +57,7 @@ CREATE TABLE IF NOT EXISTS `aiprep_tool_evaluations` (
   INDEX `idx_eval_type` (`type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 5. AIPREP_TOOL_ATTEMPTS  (already exists in production — safe no-op via IF NOT EXISTS)
---    Tracks attempt counts per candidate for rate-limiting.
+-- Create AI Prep Tool attempts table
 CREATE TABLE IF NOT EXISTS `aiprep_tool_attempts` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `user_id` VARCHAR(255) NOT NULL,
@@ -105,8 +68,7 @@ CREATE TABLE IF NOT EXISTS `aiprep_tool_attempts` (
   INDEX `idx_attempt_user` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 6. AIPREP_TOOL_CASE_STUDIES
---    Stores AI-generated case studies per candidate.
+-- Create AI Prep Tool case studies table
 CREATE TABLE IF NOT EXISTS `aiprep_tool_case_studies` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `user_id` VARCHAR(255) NOT NULL,
@@ -116,8 +78,7 @@ CREATE TABLE IF NOT EXISTS `aiprep_tool_case_studies` (
   INDEX `idx_case_study_user` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 7. PREP_TOKENS
---    One-time secure tokens for linking WBL sessions to AI Prep sessions.
+-- Create prep tokens table (one-time sync tokens, replaces Redis)
 CREATE TABLE IF NOT EXISTS `prep_tokens` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `token` VARCHAR(36) UNIQUE NOT NULL,
@@ -126,13 +87,8 @@ CREATE TABLE IF NOT EXISTS `prep_tokens` (
   INDEX `idx_prep_token` (`token`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ============================================================
--- SAFE COLUMN ALTERS  (idempotent — no-op if column exists)
--- ============================================================
-
+-- Ensure video_url column is added if aiprep_tool_evaluations already existed without it
 SET @db := DATABASE();
-
--- aiprep_tool_evaluations: video_url
 SET @col_video_url_exists := (
   SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
   WHERE TABLE_SCHEMA = @db
@@ -148,7 +104,7 @@ PREPARE stmt FROM @sql_video_url;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
--- aiprep_tool_project_context: agent_usage
+-- Ensure agent_usage column is added if aiprep_tool_project_context already existed without it
 SET @col_agent_usage_exists := (
   SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
   WHERE TABLE_SCHEMA = @db
@@ -164,7 +120,7 @@ PREPARE stmt FROM @sql_agent_usage;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
--- aiprep_tool_project_context: remaining extended columns
+-- Safe alters for project context columns
 SET @col_bp_exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'aiprep_tool_project_context' AND COLUMN_NAME = 'business_problem');
 SET @sql_bp := IF(@col_bp_exists = 0, 'ALTER TABLE `aiprep_tool_project_context` ADD COLUMN `business_problem` TEXT DEFAULT NULL', 'SELECT 1');
 PREPARE stmt FROM @sql_bp; EXECUTE stmt; DEALLOCATE PREPARE stmt;
@@ -228,3 +184,4 @@ PREPARE stmt FROM @sql_kp; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 SET @col_ln_exists := (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'aiprep_tool_project_context' AND COLUMN_NAME = 'learnings');
 SET @sql_ln := IF(@col_ln_exists = 0, 'ALTER TABLE `aiprep_tool_project_context` ADD COLUMN `learnings` TEXT DEFAULT NULL', 'SELECT 1');
 PREPARE stmt FROM @sql_ln; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
