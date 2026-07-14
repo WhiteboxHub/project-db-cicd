@@ -1,5 +1,5 @@
 ALTER TABLE candidate_marketing
-DROP COLUMN IF EXISTS my_resume;
+DROP COLUMN my_resume;
 
 ALTER TABLE candidate_marketing
 ADD COLUMN My_Resume LONGBLOB NULL,
