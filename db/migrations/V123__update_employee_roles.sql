@@ -9,6 +9,3 @@ UPDATE authuser
 SET role = 'admin' 
 WHERE uname IN ('sampath.velupula@gmail.com', 'pathanrazakr745@gmail.com'); 
 
--- 1. Convert the authuser role column into a strict ENUM
-ALTER TABLE authuser 
-MODIFY COLUMN role ENUM('admin', 'employee', 'candidate') DEFAULT 'candidate';
