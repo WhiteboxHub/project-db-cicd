@@ -12,10 +12,6 @@
 ALTER TABLE `job_listing`
   COMMENT = 'Job Listings , Sources: LinkedIn & Web , Used for Candidate Applications , Daily Auto-Clean';
 
--- V85 | V85__create_candidate_training_agreement.sql
-ALTER TABLE `candidate_training_agreement`
-  COMMENT = 'DocuSeal Agreements , Onboarding Signatures , No Backend Integration , Status: Obsolete';
-
 -- V91 | V91__create_coderpad_tables.sql
 ALTER TABLE `code_snippet`
   COMMENT = 'CoderPad Snippets , Technical Coding Tests , Starter Code & Templates , Interview Prep Tool';
@@ -37,9 +33,6 @@ ALTER TABLE `jobcli_sync_versions`
   COMMENT = 'JobCLI Sync Versions , Form Rule Snapshots , Version History , Application Bot Config';
 
 -- V96 | V96__creating_new_tables.sql
-ALTER TABLE `candidate_api_keys`
-  COMMENT = 'Candidate API Keys , OpenAI Credentials , AI Prep Tool (Legacy) , Status: Obsolete';
-
 ALTER TABLE `candidate_resume`
   COMMENT = 'Candidate Resumes , JSON Formatted Data , Profile Parsing , Resume Analysis & Matching';
 
