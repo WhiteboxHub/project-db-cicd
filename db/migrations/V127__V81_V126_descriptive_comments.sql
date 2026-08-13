@@ -1,70 +1,92 @@
 -- =============================================================================
--- Migration V127: Descriptive Table Comments (V81 to V126 CREATE TABLE scope)
+-- Migration V127: Descriptive Table Comments (Scope: encrypted_configs to projects)
 -- =============================================================================
--- Purpose  : Add multi-point structured comments (3-4 concise points per table)
---            covering Entity, Data Content, Functional Module, and Status.
+-- Purpose  : Short, clean, 3-point structured comments for all active tables
+--            containing data between encrypted_configs and projects.
+-- Verified : Audited directly against database dump (Dump20260811.sql).
 -- Note     : ALTER TABLE ... COMMENT is metadata-only. Zero impact on data/columns.
 -- =============================================================================
 
--- V81 | EVENT only - no table created (cleanup_old_job_listings event on job_listing)
+-- Table: encrypted_configs (3 rows in dump)
+ALTER TABLE `encrypted_configs`
+  COMMENT = 'App Settings , Encrypted Keys , System Security';
 
--- V82 | V82__job_listing_schemas.sql
+-- Table: event_logs (175 rows in dump)
+ALTER TABLE `event_logs`
+  COMMENT = 'Event Logs , Cleanup History , Database Automation';
+
+-- Table: extension_keys (4 rows in dump)
+ALTER TABLE `extension_keys`
+  COMMENT = 'Extension Keys , Device Tokens , Chrome Bot Auth';
+
+-- Table: flyway_schema_history (124 rows in dump)
+ALTER TABLE `flyway_schema_history`
+  COMMENT = 'Flyway History , Migration Scripts , Version Tracking';
+
+-- Table: internal_documents (24 rows in dump)
+ALTER TABLE `internal_documents`
+  COMMENT = 'Internal Docs , Training Guides , Reference Links';
+
+-- Table: job_activity_log (644 rows in dump)
+ALTER TABLE `job_activity_log`
+  COMMENT = 'Job Logs , Daily Submissions , Application Tracking';
+
+-- Table: job_automation_keywords (103 rows in dump)
+ALTER TABLE `job_automation_keywords`
+  COMMENT = 'Domain Filters , Keyword Rules , Email Extractor';
+
+-- Table: job_link_clicks (5,372 rows in dump)
+ALTER TABLE `job_link_clicks`
+  COMMENT = 'Job Clicks , Candidate Views , Usage Analytics';
+
+-- Table: job_listing (1,782 rows in dump)
 ALTER TABLE `job_listing`
-  COMMENT = 'Job Listings , Sources: LinkedIn & Web , Used for Candidate Applications , Daily Auto-Clean';
+  COMMENT = 'Job Postings , Sourced Boards , Application Links';
 
--- V91 | V91__create_coderpad_tables.sql
-ALTER TABLE `code_snippet`
-  COMMENT = 'CoderPad Snippets , Technical Coding Tests , Starter Code & Templates , Interview Prep Tool';
+-- Table: job_types (27 rows in dump)
+ALTER TABLE `job_types`
+  COMMENT = 'Job Categories , Manual & Bot Tasks , Owner Mapping';
 
-ALTER TABLE `code_execution_log`
-  COMMENT = 'CoderPad Logs , Test Run Output , Error & Execution Tracking , Candidate Coding Sessions';
-
-ALTER TABLE `coderpad_question`
-  COMMENT = 'Interview Questions , Problem Statements , Test Cases & Solutions , Technical Assessments';
-
--- V95 | V95__create_jobcli_sync_tables.sql
+-- Table: jobcli_field_answers (118 rows in dump)
 ALTER TABLE `jobcli_field_answers`
-  COMMENT = 'JobCLI Field Answers , Saved Candidate Data , Auto-Fill Form Inputs , Job Application Bot';
+  COMMENT = 'Field Answers , Form Auto-Fill , JobCLI Bot';
 
+-- Table: jobcli_locators (6 rows in dump)
 ALTER TABLE `jobcli_locators`
-  COMMENT = 'JobCLI Locators , Web UI Selectors (CSS/XPath) , Job Board Navigation , Form Automation Bot';
+  COMMENT = 'UI Selectors , ATS Navigation , JobCLI Bot';
 
+-- Table: jobcli_sync_versions (89 rows in dump)
 ALTER TABLE `jobcli_sync_versions`
-  COMMENT = 'JobCLI Sync Versions , Form Rule Snapshots , Version History , Application Bot Config';
+  COMMENT = 'Sync Versions , Rule Snapshots , JobCLI Bot';
 
--- V96 | V96__creating_new_tables.sql
-ALTER TABLE `candidate_resume`
-  COMMENT = 'Candidate Resumes , JSON Formatted Data , Profile Parsing , Resume Analysis & Matching';
+-- Table: lead (5,063 rows in dump)
+ALTER TABLE `lead`
+  COMMENT = 'Candidate Leads , Contact Info , Work Status';
 
--- V107 | V107__create_candidate_llm_api_keys.sql
-ALTER TABLE `candidate_llm_api_keys`
-  COMMENT = 'Candidate LLM Keys , OpenAI & Claude Credentials , Key Validation & Status , AI Prep Interview Tool';
+-- Table: linkedin_only_contact (734 rows in dump)
+ALTER TABLE `linkedin_only_contact`
+  COMMENT = 'LinkedIn Contacts , Recruiter Profiles , Vendor Sourcing';
 
--- V108 | V108__create_campaign_emails.sql
-ALTER TABLE `automation_workflows_schedule`
-  COMMENT = 'Workflow Schedules , Outreach Automation , Execution Timers , Candidate Email Campaigns';
+-- Table: outreach_contacts (2 rows in dump)
+ALTER TABLE `outreach_contacts`
+  COMMENT = 'Outreach Contacts , Unsubscribe Lists , Bounce Tracking';
 
-ALTER TABLE `campaign_emails`
-  COMMENT = 'Campaign Emails , Marketing Outreach Logs , Delivery & Send Status , Candidate Email Pipeline';
+-- Table: outreach_emails (12,123 rows in dump)
+ALTER TABLE `outreach_emails`
+  COMMENT = 'Outreach Emails , Recruiter Directory , Delivery Status';
 
--- V113 | V113__wboxcli_apply_analytics_tables.sql
-ALTER TABLE `cli_usage_events`
-  COMMENT = 'CLI Usage Events , Command Execution Logs , Telemetry Tracking , WboxCLI Apply Tool';
+-- Table: personal_domain_contact (7,494 rows in dump)
+ALTER TABLE `personal_domain_contact`
+  COMMENT = 'Vendor Contacts , Personal Domains , Recruiter Directory';
 
-ALTER TABLE `wboxcli_apply_analytics`
-  COMMENT = 'Apply Analytics , Job Submission Metrics , Success & Failure Rates , WboxCLI Automation Tool';
+-- Table: placement_fee_collection (96 rows in dump)
+ALTER TABLE `placement_fee_collection`
+  COMMENT = 'Placement Fees , Installment Dates , Payment Tracking';
 
--- V115 | V115__create_application_report.sql
-ALTER TABLE `application_report`
-  COMMENT = 'Application Reports , Candidate Activity Tracking , Submission Summaries , Pipeline Reporting';
+-- Table: potential_leads (221 rows in dump)
+ALTER TABLE `potential_leads`
+  COMMENT = 'Potential Leads , Sourced Profiles , Outreach Status';
 
--- V118 | V118__create_video_url_column_in_AI_prep_evaluation_table.sql
-ALTER TABLE `aiprep_tool_evaluations`
-  COMMENT = 'AI Mock Evaluations , Candidate Test Scores , Feedback & Video Links , AI Prep Interview Tool';
-
--- V122 | V122__new_tables_candidate_classes_and_candidate_session.sql
-ALTER TABLE `recording`
-  COMMENT = 'Class Recordings , Training Lecture Videos , Video & Backup URLs , Candidate Portal Playback';
-
-ALTER TABLE `session`
-  COMMENT = 'Live Sessions , Training Class Schedules , Meeting Links & Subjects , Candidate Portal Calendar';
+-- Table: projects (15 rows in dump)
+ALTER TABLE `projects`
+  COMMENT = 'Company Projects , Task Timelines , Owner Tracking';
