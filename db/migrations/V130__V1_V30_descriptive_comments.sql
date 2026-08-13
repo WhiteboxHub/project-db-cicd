@@ -3,38 +3,11 @@
 -- Target: High-quality functional documentation for active production tables
 -- ==============================================================================
 
-ALTER TABLE aiprep_tool_attempts 
-COMMENT = 'Stores candidate mock interview attempt counters partitioned by category to monitor platform usage.';
-
-ALTER TABLE aiprep_tool_candidates 
-COMMENT = 'Stores AI Prep candidate accounts, login credentials, encrypted LLM API keys, and session activity.';
-
-ALTER TABLE aiprep_tool_case_studies 
-COMMENT = 'Stores technical case studies, interview scenarios, and questions assigned during AI Prep sessions.';
-
-ALTER TABLE aiprep_tool_coderpad_cache 
-COMMENT = 'Caches candidate Coderpad performance metrics, including solved questions, submission counts, pass rates, and languages used.';
-
-ALTER TABLE aiprep_tool_project_context 
-COMMENT = 'Stores candidate project architecture, tech stack, and background details used to personalize AI interviews.';
-
-ALTER TABLE aiprep_tool_resumes 
-COMMENT = 'Stores candidate parsed resume JSON data and resume PDF URLs for AI interview personalization.';
-
-ALTER TABLE automation_contact_extracts 
-COMMENT = 'Stores staging recruiter and vendor contacts extracted from automated email digests before deduplication.';
-
 ALTER TABLE automation_workflows 
 COMMENT = 'Stores background automation workflow definitions, configurations, handler classes, and active status.';
 
-ALTER TABLE batch 
-COMMENT = 'Stores training cohort batches, assigned instructors, curriculum mappings, and start/end dates.';
-
 ALTER TABLE candidate 
 COMMENT = 'Stores candidate master profiles including contact details, visa status, skills, and onboarding stage.';
-
-ALTER TABLE candidate_classes 
-COMMENT = 'Stores candidate training class enrollments, attendance, grades, and completion records.';
 
 ALTER TABLE candidate_interview 
 COMMENT = 'Stores candidate interview schedules, company details, round types, interviewer notes, and audio links.';
