@@ -1,111 +1,137 @@
 -- Add comments only when the target table exists.
--- Required because some tables exist in the production dump but are not
--- created by the Flyway migration chain used by CI.
+-- Flyway/JDBC-safe: uses per-table conditional prepared statements and QUOTE().
 
-DELIMITER $$
+SET @tbl = 'email_templates';
+SET @comment = 'Stores reusable email templates, including subject, HTML and text content, parameters, version, and operational status.';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl AND TABLE_TYPE = 'BASE TABLE')
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-DROP PROCEDURE IF EXISTS add_table_comment_if_exists$$
+SET @tbl = 'course';
+SET @comment = 'Stores training course definitions, descriptions, aliases, and syllabus information.';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl AND TABLE_TYPE = 'BASE TABLE')
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-CREATE PROCEDURE add_table_comment_if_exists(
-    IN target_table VARCHAR(64),
-    IN descriptive_comment TEXT
-)
-BEGIN
-    IF EXISTS (
-        SELECT 1
-        FROM information_schema.TABLES
-        WHERE TABLE_SCHEMA = DATABASE()
-          AND TABLE_NAME = target_table
-          AND TABLE_TYPE = 'BASE TABLE'
-    ) THEN
-        SET @comment_sql = CONCAT(
-            'ALTER TABLE `',
-            REPLACE(target_table, '`', '``'),
-            '` COMMENT = ',
-            QUOTE(descriptive_comment)
-        );
+SET @tbl = 'course_content';
+SET @comment = 'Stores course content references organized by training areas such as Fundamentals, AI/ML, UI, and Quality Engineering.';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl AND TABLE_TYPE = 'BASE TABLE')
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-        PREPARE comment_statement FROM @comment_sql;
-        EXECUTE comment_statement;
-        DEALLOCATE PREPARE comment_statement;
-    END IF;
-END$$
+SET @tbl = 'course_material';
+SET @comment = 'Stores subject-specific course materials, including names, descriptions, resource types, links, and display order.';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl AND TABLE_TYPE = 'BASE TABLE')
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-DELIMITER ;
+SET @tbl = 'course_subject';
+SET @comment = 'Maps courses to their associated training subjects.';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl AND TABLE_TYPE = 'BASE TABLE')
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-CALL add_table_comment_if_exists(
-    'email_templates',
-    'Stores reusable email templates, including subject, HTML and text content, parameters, version, and operational status.'
-);
+SET @tbl = 'email_activity_log';
+SET @comment = 'Stores daily candidate marketing email activity, including emails read and vendor emails extracted.';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl AND TABLE_TYPE = 'BASE TABLE')
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-CALL add_table_comment_if_exists(
-    'course',
-    'Stores training course definitions, descriptions, aliases, and syllabus information.'
-);
+SET @tbl = 'company';
+SET @comment = 'Stores company profiles, including names, addresses, contact details, domains, notes, and audit information.';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl AND TABLE_TYPE = 'BASE TABLE')
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-CALL add_table_comment_if_exists(
-    'course_content',
-    'Stores course content references organized by training areas such as Fundamentals, AI/ML, UI, and Quality Engineering.'
-);
+SET @tbl = 'company_contact';
+SET @comment = 'Stores contacts associated with companies, including job titles, contact information, addresses, LinkedIn identifiers, and notes.';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl AND TABLE_TYPE = 'BASE TABLE')
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-CALL add_table_comment_if_exists(
-    'course_material',
-    'Stores subject-specific course materials, including names, descriptions, resource types, links, and display order.'
-);
+SET @tbl = 'candidate_resume';
+SET @comment = 'Stores candidate resume data in JSON format, including the source file name and creation and update timestamps.';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl AND TABLE_TYPE = 'BASE TABLE')
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-CALL add_table_comment_if_exists(
-    'course_subject',
-    'Maps courses to their associated training subjects.'
-);
+SET @tbl = 'candidate_session';
+SET @comment = 'Maps candidates to their assigned or attended training sessions.';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl AND TABLE_TYPE = 'BASE TABLE')
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-CALL add_table_comment_if_exists(
-    'email_activity_log',
-    'Stores daily candidate marketing email activity, including emails read and vendor emails extracted.'
-);
+SET @tbl = 'cli_usage_events';
+SET @comment = 'Stores CLI usage events, command results, execution duration, job-processing totals, and additional event metadata.';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl AND TABLE_TYPE = 'BASE TABLE')
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-CALL add_table_comment_if_exists(
-    'company',
-    'Stores company profiles, including names, addresses, contact details, domains, notes, and audit information.'
-);
+SET @tbl = 'clients';
+SET @comment = 'Stores employer and client organization names, addresses, telephone details, and creation timestamps.';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl AND TABLE_TYPE = 'BASE TABLE')
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-CALL add_table_comment_if_exists(
-    'company_contact',
-    'Stores contacts associated with companies, including job titles, contact information, addresses, LinkedIn identifiers, and notes.'
-);
+SET @tbl = 'code_execution_log';
+SET @comment = 'Stores candidate code execution history, including source code, inputs, outputs, errors, execution status, and duration.';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl AND TABLE_TYPE = 'BASE TABLE')
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-CALL add_table_comment_if_exists(
-    'candidate_resume',
-    'Stores candidate resume data in JSON format, including the source file name and creation and update timestamps.'
-);
+SET @tbl = 'code_snippet';
+SET @comment = 'Stores user-created code snippets, programming language, test cases, sharing configuration, and execution settings.';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl AND TABLE_TYPE = 'BASE TABLE')
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-CALL add_table_comment_if_exists(
-    'candidate_session',
-    'Maps candidates to their assigned or attended training sessions.'
-);
-
-CALL add_table_comment_if_exists(
-    'cli_usage_events',
-    'Stores CLI usage events, command results, execution duration, job-processing totals, and additional event metadata.'
-);
-
-CALL add_table_comment_if_exists(
-    'clients',
-    'Stores employer and client organization names, addresses, telephone details, and creation timestamps.'
-);
-
-CALL add_table_comment_if_exists(
-    'code_execution_log',
-    'Stores candidate code execution history, including source code, inputs, outputs, errors, execution status, and duration.'
-);
-
-CALL add_table_comment_if_exists(
-    'code_snippet',
-    'Stores user-created code snippets, programming language, test cases, sharing configuration, and execution settings.'
-);
-
-CALL add_table_comment_if_exists(
-    'coderpad_question',
-    'Stores CoderPad assessment questions, problem statements, starter code, test cases, candidate assignments, and execution settings.'
-);
-
-DROP PROCEDURE IF EXISTS add_table_comment_if_exists;
+SET @tbl = 'coderpad_question';
+SET @comment = 'Stores CoderPad assessment questions, problem statements, starter code, test cases, candidate assignments, and execution settings.';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl AND TABLE_TYPE = 'BASE TABLE')
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
