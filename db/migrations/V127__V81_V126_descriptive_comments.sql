@@ -3,160 +3,360 @@
 -- =============================================================================
 -- Purpose  : Add short, clean 3-point structured comments for all active tables
 --            from encrypted_configs to xxx_candidate_old in alphabetical order.
---
--- Safety   : Uses a dynamic stored procedure wrapper (add_tbl_comment) that
---            verifies table existence in information_schema before altering.
---            - On CI/CD (fresh testdb) : Safely skips tables not yet migrated.
---            - On Local / Prod (wbl)   : Applies descriptive comments to all tables.
---
--- Verified : Audited against database dump (Dump20260811.sql).
---            Only tables populated with active data are included.
+-- Safety   : Avoids stored procedures and DELIMITER so Flyway/JDBC can execute.
+--            Only sets comments when the target table exists AND its TABLE_COMMENT is empty.
 -- Note     : ALTER TABLE ... COMMENT is metadata-only. Zero impact on data/columns.
 -- =============================================================================
 
-DELIMITER $$
+-- Pattern repeated per table:
+-- SET @tbl = 'table_name';
+-- SET @comment = 'comment text';
+-- SELECT IF(
+--   EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+--   AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+--   CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+--   'SELECT 1'
+-- ) INTO @sql;
+-- PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-DROP PROCEDURE IF EXISTS add_tbl_comment$$
+SET @tbl = 'encrypted_configs';
+SET @comment = 'App Settings , Encrypted Keys , System Security';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-CREATE PROCEDURE add_tbl_comment(
-    IN p_table VARCHAR(128),
-    IN p_comment VARCHAR(512)
-)
-BEGIN
-    IF EXISTS (
-        SELECT 1 
-        FROM information_schema.TABLES
-        WHERE TABLE_SCHEMA = DATABASE() 
-          AND TABLE_NAME = p_table
-    ) THEN
-        SET @sql_stmt = CONCAT('ALTER TABLE `', p_table, '` COMMENT = ''', p_comment, '''');
-        PREPARE stmt FROM @sql_stmt;
-        EXECUTE stmt;
-        DEALLOCATE PREPARE stmt;
-    END IF;
-END$$
+SET @tbl = 'event_logs';
+SET @comment = 'Event Logs , Cleanup History , Database Automation';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
-DELIMITER ;
+SET @tbl = 'extension_keys';
+SET @comment = 'Extension Keys , Device Tokens , Chrome Bot Auth';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- =============================================================================
--- Active Table Comments (Alphabetical Order: encrypted_configs -> xxx_candidate_old)
--- =============================================================================
+SET @tbl = 'flyway_schema_history';
+SET @comment = 'Flyway History , Migration Scripts , Version Tracking';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: encrypted_configs (3 rows in dump)
-CALL add_tbl_comment('encrypted_configs', 'App Settings , Encrypted Keys , System Security');
+SET @tbl = 'internal_documents';
+SET @comment = 'Internal Docs , Training Guides , Reference Links';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: event_logs (175 rows in dump)
-CALL add_tbl_comment('event_logs', 'Event Logs , Cleanup History , Database Automation');
+SET @tbl = 'job_activity_log';
+SET @comment = 'Job Logs , Daily Submissions , Application Tracking';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: extension_keys (4 rows in dump)
-CALL add_tbl_comment('extension_keys', 'Extension Keys , Device Tokens , Chrome Bot Auth');
+SET @tbl = 'job_automation_keywords';
+SET @comment = 'Domain Filters , Keyword Rules , Email Extractor';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: flyway_schema_history (124 rows in dump)
-CALL add_tbl_comment('flyway_schema_history', 'Flyway History , Migration Scripts , Version Tracking');
+SET @tbl = 'job_link_clicks';
+SET @comment = 'Job Clicks , Candidate Views , Usage Analytics';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: internal_documents (24 rows in dump)
-CALL add_tbl_comment('internal_documents', 'Internal Docs , Training Guides , Reference Links');
+SET @tbl = 'job_listing';
+SET @comment = 'Job Postings , Sourced Boards , Application Links';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: job_activity_log (644 rows in dump)
-CALL add_tbl_comment('job_activity_log', 'Job Logs , Daily Submissions , Application Tracking');
+SET @tbl = 'job_types';
+SET @comment = 'Job Categories , Manual & Bot Tasks , Owner Mapping';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: job_automation_keywords (103 rows in dump)
-CALL add_tbl_comment('job_automation_keywords', 'Domain Filters , Keyword Rules , Email Extractor');
+SET @tbl = 'jobcli_field_answers';
+SET @comment = 'Field Answers , Form Auto-Fill , JobCLI Bot';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: job_link_clicks (5,372 rows in dump)
-CALL add_tbl_comment('job_link_clicks', 'Job Clicks , Candidate Views , Usage Analytics');
+SET @tbl = 'jobcli_locators';
+SET @comment = 'UI Selectors , ATS Navigation , JobCLI Bot';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: job_listing (1,782 rows in dump)
-CALL add_tbl_comment('job_listing', 'Job Postings , Sourced Boards , Application Links');
+SET @tbl = 'jobcli_sync_versions';
+SET @comment = 'Sync Versions , Rule Snapshots , JobCLI Bot';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: job_types (27 rows in dump)
-CALL add_tbl_comment('job_types', 'Job Categories , Manual & Bot Tasks , Owner Mapping');
+SET @tbl = 'lead';
+SET @comment = 'Candidate Leads , Contact Info , Work Status';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: jobcli_field_answers (118 rows in dump)
-CALL add_tbl_comment('jobcli_field_answers', 'Field Answers , Form Auto-Fill , JobCLI Bot');
+SET @tbl = 'linkedin_only_contact';
+SET @comment = 'LinkedIn Contacts , Recruiter Profiles , Vendor Sourcing';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: jobcli_locators (6 rows in dump)
-CALL add_tbl_comment('jobcli_locators', 'UI Selectors , ATS Navigation , JobCLI Bot');
+SET @tbl = 'outreach_contacts';
+SET @comment = 'Outreach Contacts , Unsubscribe Lists , Bounce Tracking';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: jobcli_sync_versions (89 rows in dump)
-CALL add_tbl_comment('jobcli_sync_versions', 'Sync Versions , Rule Snapshots , JobCLI Bot');
+SET @tbl = 'outreach_email_recipients';
+SET @comment = 'Email Recipients , Delivery Targets , Outreach Campaigns';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: lead (5,063 rows in dump)
-CALL add_tbl_comment('lead', 'Candidate Leads , Contact Info , Work Status');
+SET @tbl = 'outreach_emails';
+SET @comment = 'Outreach Emails , Recruiter Directory , Delivery Status';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: linkedin_only_contact (734 rows in dump)
-CALL add_tbl_comment('linkedin_only_contact', 'LinkedIn Contacts , Recruiter Profiles , Vendor Sourcing');
+SET @tbl = 'personal_domain_contact';
+SET @comment = 'Vendor Contacts , Personal Domains , Recruiter Directory';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: outreach_contacts (2 rows in dump)
-CALL add_tbl_comment('outreach_contacts', 'Outreach Contacts , Unsubscribe Lists , Bounce Tracking');
+SET @tbl = 'placement_fee_collection';
+SET @comment = 'Placement Fees , Installment Dates , Payment Tracking';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: outreach_email_recipients (113,512 rows in dump)
-CALL add_tbl_comment('outreach_email_recipients', 'Email Recipients , Delivery Targets , Outreach Campaigns');
+SET @tbl = 'potential_leads';
+SET @comment = 'Potential Leads , Sourced Profiles , Outreach Status';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: outreach_emails (12,123 rows in dump)
-CALL add_tbl_comment('outreach_emails', 'Outreach Emails , Recruiter Directory , Delivery Status');
+SET @tbl = 'projects';
+SET @comment = 'Company Projects , Task Timelines , Owner Tracking';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: personal_domain_contact (7,494 rows in dump)
-CALL add_tbl_comment('personal_domain_contact', 'Vendor Contacts , Personal Domains , Recruiter Directory');
+SET @tbl = 'recording';
+SET @comment = 'Session Recordings , Video Links , AI Prep Module';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: placement_fee_collection (96 rows in dump)
-CALL add_tbl_comment('placement_fee_collection', 'Placement Fees , Installment Dates , Payment Tracking');
+SET @tbl = 'recording_batch';
+SET @comment = 'Batch Recordings , Group Sessions , AI Prep Module';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: potential_leads (221 rows in dump)
-CALL add_tbl_comment('potential_leads', 'Potential Leads , Sourced Profiles , Outreach Status');
+SET @tbl = 'schema_migrations';
+SET @comment = 'Schema Versions , Rails Migrations , DB History';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: projects (15 rows in dump)
-CALL add_tbl_comment('projects', 'Company Projects , Task Timelines , Owner Tracking');
+SET @tbl = 'session';
+SET @comment = 'Candidate Sessions , Login Tracking , Class Access';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: recording (6,521 rows in dump)
-CALL add_tbl_comment('recording', 'Session Recordings , Video Links , AI Prep Module');
+SET @tbl = 'subject';
+SET @comment = 'Training Subjects , Course Topics , Curriculum Modules';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: recording_batch (11,962 rows in dump)
-CALL add_tbl_comment('recording_batch', 'Batch Recordings , Group Sessions , AI Prep Module');
+SET @tbl = 'submission_events';
+SET @comment = 'Submission Events , Application Actions , Tracking Log';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: schema_migrations (37 rows in dump)
-CALL add_tbl_comment('schema_migrations', 'Schema Versions , Rails Migrations , DB History');
+SET @tbl = 'submissions';
+SET @comment = 'Job Submissions , Application Records , ATS Tracking';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: session (3,116 rows in dump)
-CALL add_tbl_comment('session', 'Candidate Sessions , Login Tracking , Class Access');
+SET @tbl = 'submitters';
+SET @comment = 'Submitters Info , Contact Details , Application Source';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: subject (77 rows in dump)
-CALL add_tbl_comment('subject', 'Training Subjects , Course Topics , Curriculum Modules');
+SET @tbl = 'talentscreen_apply_queue';
+SET @comment = 'Apply Queue , Talentscreen Jobs , Automation Pipeline';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: submission_events (2 rows in dump)
-CALL add_tbl_comment('submission_events', 'Submission Events , Application Actions , Tracking Log');
+SET @tbl = 'template_folders';
+SET @comment = 'Email Folders , Template Groups , Outreach Org';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: submissions (2 rows in dump)
-CALL add_tbl_comment('submissions', 'Job Submissions , Application Records , ATS Tracking');
+SET @tbl = 'templates';
+SET @comment = 'Email Templates , Outreach Drafts , Campaign Content';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: submitters (2 rows in dump)
-CALL add_tbl_comment('submitters', 'Submitters Info , Contact Details , Application Source');
+SET @tbl = 'users';
+SET @comment = 'System Users , Auth Accounts , Role Management';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: talentscreen_apply_queue (10 rows in dump)
-CALL add_tbl_comment('talentscreen_apply_queue', 'Apply Queue , Talentscreen Jobs , Automation Pipeline');
+SET @tbl = 'vendor';
+SET @comment = 'Recruiter Contacts , Vendor Directory , Email Sourcing';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: template_folders (1 row in dump)
-CALL add_tbl_comment('template_folders', 'Email Folders , Template Groups , Outreach Org');
+SET @tbl = 'vendor_contact_extracts';
+SET @comment = 'Extracted Contacts , Daily Sourcing , Vendor Pipeline';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: templates (9 rows in dump)
-CALL add_tbl_comment('templates', 'Email Templates , Outreach Drafts , Campaign Content');
+SET @tbl = 'wboxcli_apply_analytics';
+SET @comment = 'CLI Apply Stats , Job Apply Runs , Automation Analytics';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
--- Table: users (1 row in dump)
-CALL add_tbl_comment('users', 'System Users , Auth Accounts , Role Management');
-
--- Table: vendor (6,095 rows in dump)
-CALL add_tbl_comment('vendor', 'Recruiter Contacts , Vendor Directory , Email Sourcing');
-
--- Table: vendor_contact_extracts (4,454 rows in dump)
-CALL add_tbl_comment('vendor_contact_extracts', 'Extracted Contacts , Daily Sourcing , Vendor Pipeline');
-
--- Table: wboxcli_apply_analytics (9 rows in dump)
-CALL add_tbl_comment('wboxcli_apply_analytics', 'CLI Apply Stats , Job Apply Runs , Automation Analytics');
-
--- Table: xxx_candidate_old (1,194 rows in dump)
-CALL add_tbl_comment('xxx_candidate_old', 'Archived Candidates , Legacy Data , Pre-Migration Records');
-
--- =============================================================================
--- Cleanup Helper Procedure
--- =============================================================================
-DROP PROCEDURE IF EXISTS add_tbl_comment;
+SET @tbl = 'xxx_candidate_old';
+SET @comment = 'Archived Candidates , Legacy Data , Pre-Migration Records';
+SELECT IF(
+  EXISTS(SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl)
+  AND (SELECT COALESCE(TABLE_COMMENT,'') FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = @tbl) = '',
+  CONCAT('ALTER TABLE `', REPLACE(@tbl,'`','``'), '` COMMENT = ', QUOTE(@comment)),
+  'SELECT 1'
+) INTO @sql; PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
