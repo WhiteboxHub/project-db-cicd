@@ -174,7 +174,7 @@ END OR `subject` IS NULL);
 -- WHERE question_text IN (
 --     -- 47 unique question texts enumerated in UPDATE clause above
 -- )
---   AND concept NOT IN (
+--   AND (concept IS NULL OR concept NOT IN (
 --       'Python & Data Manipulation', 'ML & Deep Learning Fundamentals',
 --       'ML Frameworks & Tooling', 'NLP', 'Generative AI & LLMs',
 --       'RAG & Retrieval', 'Agentic AI & Multi-Agent Systems',
@@ -185,7 +185,7 @@ END OR `subject` IS NULL);
 --       'Data Structures & Algorithms', 'Containers & Orchestration',
 --       'CI/CD & GitOps', 'Cloud Architecture & Services',
 --       'Infrastructure as Code & Security'
---   );
+--   ));
 
 -- Postcondition Check 1: Verify all 18 concepts map to canonical subjects across entire DB
 -- Expected: 0 rows
@@ -198,18 +198,18 @@ END OR `subject` IS NULL);
 --         'RAG & Retrieval', 'Agentic AI & Multi-Agent Systems',
 --         'Models & Context Engineering',
 --         'AI Systems Ops: Evaluation, Guardrails & Observability'
---     ) AND subject <> 'AI Engineering'
+--     ) AND (subject IS NULL OR subject <> 'AI Engineering')
 -- ) OR (
 --     concept IN (
 --         'System Architecture & Design', 'API Design & Microservices',
 --         'Databases & Caching', 'Concurrency & Async Systems',
 --         'Data Structures & Algorithms'
---     ) AND subject <> 'Software Engineering'
+--     ) AND (subject IS NULL OR subject <> 'Software Engineering')
 -- ) OR (
 --     concept IN (
 --         'Containers & Orchestration', 'CI/CD & GitOps',
 --         'Cloud Architecture & Services', 'Infrastructure as Code & Security'
---     ) AND subject <> 'DevOps and Cloud'
+--     ) AND (subject IS NULL OR subject <> 'DevOps and Cloud')
 -- );
 
 -- Postcondition Check 2: Verify zero incorrectly normalized rows among the 47 targeted questions
@@ -226,16 +226,16 @@ END OR `subject` IS NULL);
 --         'RAG & Retrieval', 'Agentic AI & Multi-Agent Systems',
 --         'Models & Context Engineering',
 --         'AI Systems Ops: Evaluation, Guardrails & Observability'
---     ) AND subject <> 'AI Engineering')
+--     ) AND (subject IS NULL OR subject <> 'AI Engineering'))
 --     OR
 --     (concept IN (
 --         'System Architecture & Design', 'API Design & Microservices',
 --         'Databases & Caching', 'Concurrency & Async Systems',
 --         'Data Structures & Algorithms'
---     ) AND subject <> 'Software Engineering')
+--     ) AND (subject IS NULL OR subject <> 'Software Engineering'))
 --     OR
 --     (concept IN (
 --         'Containers & Orchestration', 'CI/CD & GitOps',
 --         'Cloud Architecture & Services', 'Infrastructure as Code & Security'
---     ) AND subject <> 'DevOps and Cloud')
+--     ) AND (subject IS NULL OR subject <> 'DevOps and Cloud'))
 -- );

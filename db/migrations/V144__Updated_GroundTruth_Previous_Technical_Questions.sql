@@ -1,10 +1,20 @@
 -- =====================================================================
 -- Flyway Migration V144: Calibrate V140 & V141 Taxonomy & Ground Truth Rubrics
+--
+-- OPERATIONAL SECTIONS:
+--   Section 1: Baseline Reactivation of Evaluation Questions (~469 rows)
+--              Intentionally reverses V141 blanket deactivation to restore historical
+--              questions seeded across V132 (200 rows) and V140 (269 rows).
+--              Expected affected population: 469 TECHNICAL rows.
+--   Section 2: Calibrate Ground Truth Rubrics & Standardize Taxonomy (482 rows)
+--              Updates rubrics with structured criteria and aligns canonical taxonomy.
+--   Section 3: Deployment Runbook & Invariant Verification Checks
+--              Pre- and post-validation queries asserting affected counts and taxonomy.
 -- =====================================================================
 
 -- -----------------------------------------------------------------
--- 1. Reactivate Prior Questions in Evaluation Categories
--- Makes all questions active that were previously soft-deactivated.
+-- SECTION 1: REACTIVATE HISTORICAL EVALUATION QUESTIONS (~469 ROWS)
+-- Restores active status for baseline questions soft-deactivated in V141.
 -- -----------------------------------------------------------------
 UPDATE `ai_prep_question_bank`
 SET `is_active` = 1
@@ -12,7 +22,7 @@ WHERE `category` IN ('TECHNICAL', 'SYSTEM_DESIGN', 'HIRING_MANAGER', 'RECRUITER'
   AND `is_active` = 0;
 
 -- -----------------------------------------------------------------
--- 2. Calibrate Ground Truth Rubrics & Standardize Taxonomy
+-- SECTION 2: CALIBRATE GROUND TRUTH RUBRICS & STANDARDIZE TAXONOMY (482 ROWS)
 -- -----------------------------------------------------------------
 UPDATE `ai_prep_question_bank`
 SET `subject` = 'AI Engineering',
@@ -2905,3 +2915,32 @@ SET `subject` = 'AI Engineering',
     `concept` = 'Agentic AI & Multi-Agent Systems',
     `ground_truth` = '{"topic": "Agentic AI & Multi-Agent Systems", "subcategory": "Agentic AI & Multi-Agent Systems", "question_type": "Technical", "evidence_policy": {"acceptable_evidence_is_non_exhaustive": true, "semantic_equivalence_allowed": true, "evaluator_guidance": "acceptable_evidence lists representative examples of valid technical evidence, not mandatory keywords. Any technically equivalent demonstration or alternative valid architecture must receive full credit.", "criteria_weight_policy": "All criteria weights sum to 100 points."}, "evaluation": {"criteria": [{"id": "C1", "description": "Core Concept & Technical Architecture: Articulates underlying mechanisms of Agentic AI & Multi-Agent Systems", "weight": 40, "required": true, "acceptable_evidence": ["Core Concept & Technical Architecture: Articulates underlying mechanisms of Agentic AI & Multi-Agent Systems"]}, {"id": "C2", "description": "Implementation & Data Flow: Explains data contracts, state management, and execution steps", "weight": 30, "required": true, "acceptable_evidence": ["Implementation & Data Flow: Explains data contracts, state management, and execution steps"]}, {"id": "C3", "description": "Edge Cases, Fallbacks & Tradeoffs: Identifies failure modes, performance limits, and remediation", "weight": 30, "required": false, "acceptable_evidence": ["Edge Cases, Fallbacks & Tradeoffs: Identifies failure modes, performance limits, and remediation"]}], "critical_failures": ["Provides a high-level theoretical answer without concrete architectural or implementation details.", "Fails to address failure modes, edge cases, or validation requirements."]}}'
 WHERE `question_text` = 'How would you design a conversational agentic system to query, validate, and navigate complex hierarchical data structures (such as Bill of Materials or package dependency trees) with recursive graph traversal?';
+
+-- =====================================================================
+-- SECTION 3: DEPLOYMENT / RUNBOOK VALIDATION CHECKS (V144 Verification Invariants)
+-- =====================================================================
+-- 1. Pre-execution Reactivation Invariant Check:
+--    Verify exactly 469 inactive rows exist in target categories prior to migration:
+-- SELECT category, COUNT(*) AS inactive_count
+-- FROM ai_prep_question_bank
+-- WHERE category IN ('TECHNICAL', 'SYSTEM_DESIGN', 'HIRING_MANAGER', 'RECRUITER')
+--   AND is_active = 0
+-- GROUP BY category;
+-- Expected: TECHNICAL = 469, SYSTEM_DESIGN = 0, HIRING_MANAGER = 0, RECRUITER = 0
+
+-- 2. Post-execution Reactivation Invariant Check:
+--    Verify zero inactive rows remain in target evaluation categories:
+-- SELECT category, COUNT(*) AS remaining_inactive_count
+-- FROM ai_prep_question_bank
+-- WHERE category IN ('TECHNICAL', 'SYSTEM_DESIGN', 'HIRING_MANAGER', 'RECRUITER')
+--   AND is_active = 0
+-- GROUP BY category;
+-- Expected: 0 rows
+
+-- 3. Post-execution Taxonomy Invariant Check:
+--    Verify that all questions conform to the 3 canonical subjects:
+-- SELECT COUNT(*) AS non_canonical_subject_count
+-- FROM ai_prep_question_bank
+-- WHERE subject NOT IN ('AI Engineering', 'Software Engineering', 'DevOps and Cloud')
+--    OR subject IS NULL;
+-- Expected: 0 rows
