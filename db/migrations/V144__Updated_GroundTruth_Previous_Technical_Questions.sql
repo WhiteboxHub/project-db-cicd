@@ -2,6 +2,18 @@
 -- Flyway Migration V144: Calibrate V140 & V141 Taxonomy & Ground Truth Rubrics
 -- =====================================================================
 
+-- -----------------------------------------------------------------
+-- 1. Reactivate Prior Questions in Evaluation Categories
+-- Makes all questions active that were previously soft-deactivated.
+-- -----------------------------------------------------------------
+UPDATE `ai_prep_question_bank`
+SET `is_active` = 1
+WHERE `category` IN ('TECHNICAL', 'SYSTEM_DESIGN', 'HIRING_MANAGER', 'RECRUITER')
+  AND `is_active` = 0;
+
+-- -----------------------------------------------------------------
+-- 2. Calibrate Ground Truth Rubrics & Standardize Taxonomy
+-- -----------------------------------------------------------------
 UPDATE `ai_prep_question_bank`
 SET `subject` = 'AI Engineering',
     `concept` = 'Agentic AI & Multi-Agent Systems',
