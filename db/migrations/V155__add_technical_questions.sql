@@ -1,5 +1,5 @@
 -- =====================================================================
--- Flyway Migration V148: Add Calibrated Questions 
+-- Flyway Migration V155: Add Calibrated Questions 
 -- Inserts 149 deduplicated, taxonomically aligned questions into ai_prep_question_bank.
 -- Deduplicated against existing V140-V147 and internal batch redundancies .
 -- Time matrix aligned: EASY (60s/90s), MEDIUM (90s/150s), HARD (120s/210s).
